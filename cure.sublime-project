@@ -1,0 +1,37 @@
+{
+	"build_systems":
+	[
+		{
+			"cmd":
+			[
+				"lua",
+				"build.lua"
+			],
+			"name": "Cure: Build",
+			"working_dir": "$project_path"
+		},
+		{
+			"cmd":
+			[
+				"lua",
+				"$file"
+			],
+			"file_regex": "^.*\\\\(.*[.].*):([0-9]*): ?([0-9]*)",
+			"name": "Cure: Run",
+			"selector": "source.lua",
+			"working_dir": "$file_path"
+		}
+	],
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.sublime-project",
+				"*.sublime-workspace",
+				".gitignore"
+			],
+			"path": "."
+		}
+	]
+}
