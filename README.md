@@ -61,11 +61,11 @@ type of source depends on the Roblox class used:
 
 	Follows the same rules as Scripts.
 
-Because of the way Roblox parses XML, spaces at the start of strings are
-truncated. To get around this, if the first character in a string is a space
-or "\", then the string will be encoded simply by adding a "\" character to
-the beginning. To decode, if a string starts with a "\", then that character
-is removed.
+Because of the way Roblox parses XML, whitespace at the start of strings are
+truncated. To get around this, if the first character in a string is
+whitespace or a "\" character, then the string will be encoded simply by
+adding a "\" character to the beginning. To decode, if a string starts with a
+"\", then that character is removed.
 
 
 ### Structure
@@ -191,13 +191,12 @@ for clients as well, unless noted otherwise.
 	properly, the following handshake procedure occurs between the server and
 	client:
 
-	1. **Server:** Wait for the PlayerGui to be added.
-	2. **Server:** Copy the client script to the PlayerGui.
-	3. **Server:** Wait for indication that client script is successfully running.
-	4. **Client:** Reliably remove self to ensure code is persistent.
-	5. **Client:** Send indication that the client script is successfully running with persistence.
-	6. **Client:** Wait for lists of natives, packages, and scripts.
-	7. **Server:** Send lists of natives, packages, and scripts.
+	1. **Server:** Create Backpack object and copy the client script to it.
+	2. **Server:** Wait for indication that client script is successfully running.
+	3. **Client:** Reliably remove self to ensure code is persistent.
+	4. **Client:** Send indication that the client script is successfully running with persistence.
+	5. **Client:** Wait for lists of natives, packages, and scripts.
+	6. **Server:** Send lists of natives, packages, and scripts.
 
 	This handshake requires that the client's Character is not loaded
 	immediately. As a consequence, Character spawning cannot be handled
@@ -241,10 +240,10 @@ your place. A Sublime Text project file is provided to get started.
 	Configuration objects, and files are converted based on their extensions.
 	The name of a file or folder is used as the name of the object.
 
-	- `*.lua`: Converts to a StringValue or BoolValue source.
+	- `*.lua`: Converts to a StringValue or BoolValue source (depending on length of content).
 	- `*.script.lua`: Converts to a Script source.
 	- `*.localscript.lua`: Converts to a LocalScript source.
-	- `*.asset`: Converts to an IntValue source.
+	- `*.asset`: Converts to an IntValue source. The content of the file is the asset ID.
 	- `*.*` (anything else): Converts to a disabled Script whose Source is commented out.
 	- `.gitignore`: Ignored, so that empty folders may be committed with git.
 
@@ -253,15 +252,15 @@ your place. A Sublime Text project file is provided to get started.
 	- `*.bool.value`: Content that is "0", "false", "nil", "no", "null", or empty, becomes false (case-insensitive). Anything else becomes true.
 	- `*.brickcolor.value`: Content is the integer representation of a BrickColor.
 	- `*.cframe.value`: Content is 12 seperated numbers (whitespace, commas, and semi-colons).
-	- `*.color3.value`: Content is 3 separated numbers, or hexadecimal ("#FFFFFF").
+	- `*.color3.value`: Content is 3 separated numbers (r, g, b), or hexadecimal ("#FFFFFF").
 	- `*.doubleconstrained.value`: Content is a single number.
 	- `*.intconstrained.value`: Content is a single integer.
 	- `*.int.value`: Content is a single integer.
 	- `*.number.value`: Content is a single number.
 	- `*.object.value`: Content is blank (not fully implemented).
-	- `*.ray.value`: Content is 6 seperated numbers.
+	- `*.ray.value`: Content is 6 seperated numbers (origin Vector3, direction Vector3).
 	- `*.string.value`: Content is anything (non-binary).
-	- `*.vector3.value`: Content is 3 seperated numbers.
+	- `*.vector3.value`: Content is 3 seperated numbers (x, y, z).
 
 ### Building
 
@@ -271,7 +270,7 @@ In order to run `build.lua`, you'll need two things:
 - The LuaFileSystem module
 
 In Windows, this can be done by installing [LuaForWindows][lfw], then simply
-running `build.lua`.
+running `lua build.lua`.
 
 *more solutions here*
 
