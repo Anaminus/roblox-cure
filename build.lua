@@ -238,6 +238,7 @@ local valueTypes = {
 		or data == "0"
 		or data == "false"
 		or data == "nil"
+		or data == "no"
 		or data == "null" then
 			data = false
 		else
