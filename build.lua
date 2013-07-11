@@ -233,7 +233,7 @@ end
 
 local valueTypes = {
 	['bool'] = function(name,data)
-		data = data:gsub('^%s+',''):gsub('%s+$','')
+		data = data:gsub('^%s+',''):gsub('%s+$',''):lower()
 		if data == ""
 		or data == "0"
 		or data == "false"

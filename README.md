@@ -250,7 +250,7 @@ your place. A Sublime Text project file is provided to get started.
 
 	Value objects may also be created by using the `.value` extension:
 
-	- `*.bool.value`: Content that is "0", "false", "nil", "no", "null", or empty, becomes false. Anything else becomes true.
+	- `*.bool.value`: Content that is "0", "false", "nil", "no", "null", or empty, becomes false (case-insensitive). Anything else becomes true.
 	- `*.brickcolor.value`: Content is the integer representation of a BrickColor.
 	- `*.cframe.value`: Content is 12 seperated numbers (whitespace, commas, and semi-colons).
 	- `*.color3.value`: Content is 3 separated numbers, or hexadecimal ("#FFFFFF").
