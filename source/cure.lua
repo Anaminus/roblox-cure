@@ -123,7 +123,12 @@ local runSource do
 
 		-- the function's env will piggyback off of this script's env to access globals
 		setfenv(run,setmetatable({},{__index=env,__metatable="The metatable is locked"}))
-		return run()
+		-- but, because of how lua works, we will inject this env into the script's env
+		local ret = {run()}
+		for i, v in pairs(getfenv(run)) do
+			env[i] = v
+		end
+		return unpack(ret)
 	end
 end
 
@@ -151,6 +156,33 @@ local function receiveChildren(object,name)
 	return list
 end
 
+local function traversePackage(obj,package,namappend)
+	namappend = namappend or ""
+	obj = type(obj) == "table" and obj or obj:getChildren()
+	for i=1,#obj do
+		if obj[i]:isA"Configuration" then
+			--Folder! Gah!
+			traversePackage(obj[i],package,namappend..decodeTruncEsc(obj[i].Name)..".")
+		else
+			package[namappend..decodeTruncEsc(obj[i].Name)] = getSourceFromInstance(obj[i],false)
+		end
+	end
+end
+
+local function traverseNativePackage(obj,package,natpack,namappend)
+	namappend = namappend or ""
+	obj = type(obj) == "table" and obj or obj:getChildren()
+	for i=1,#obj do
+		natpack[i] = namappend..decodeTruncEsc(obj[i].Name)
+		if obj[i]:isA"Configuration" then
+			--Folder! Gah!
+			traversePackage(obj[i],package,natpack,namappend..decodeTruncEsc(obj[i].Name)..".")
+		else
+			package[namappend..decodeTruncEsc(obj[i].Name)] = getSourceFromInstance(obj[i],false)
+		end
+	end
+end
+
 -- server-only: creates a StringValue with a list of children names, to be sent to a client
 local function makeListTag(object,name)
 	local value = ""
@@ -176,9 +208,7 @@ do
 	-- retrieve package sources
 	do
 		local packages = receiveChildren(Packages,packageTagName)
-		for i=1,#packages do
-			packageSource[decodeTruncEsc(packages[i].Name)] = getSourceFromInstance(packages[i],false)
-		end
+		traversePackage(packages,packageSource)
 	end
 
 	function require(name)
@@ -187,7 +217,7 @@ do
 		if packageData[name] then
 			return packageData[name]
 		end
-
+		
 		local source = packageSource[name]
 		if not source then
 			error("`" .. name .. "` is not an existing package",2)
@@ -207,6 +237,7 @@ do
 	-- retrieve native sources
 	do
 		local packages = receiveChildren(Native,nativeTagName)
+		traverseNativePackage(packages,packageSource,nativePackages)
 		for i=1,#packages do
 			local name = decodeTruncEsc(packages[i].Name)
 			packageSource[name] = getSourceFromInstance(packages[i],false)
