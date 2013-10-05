@@ -247,6 +247,9 @@ your place. A Sublime Text project file is provided to get started.
 	- `*.*` (anything else): Converts to a disabled Script whose Source is commented out.
 	- `.gitignore`: Ignored, so that empty folders may be committed with git.
 
+	For convenience, Lua files are checked for syntax errors. Note that a file
+	with an error will still be built regardless.
+
 	Value objects may also be created by using the `.value` extension:
 
 	- `*.bool.value`: Content that is "0", "false", "nil", "no", "null", or empty, becomes false (case-insensitive). Anything else becomes true.
