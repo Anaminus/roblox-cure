@@ -123,12 +123,7 @@ local runSource do
 
 		-- the function's env will piggyback off of this script's env to access globals
 		setfenv(run,setmetatable({},{__index=env,__metatable="The metatable is locked"}))
-		-- but, because of how lua works, we will inject this env into the script's env
-		local ret = {run()}
-		for i, v in pairs(getfenv(run)) do
-			env[i] = v
-		end
-		return unpack(ret)
+		return run()
 	end
 end
 
@@ -217,7 +212,7 @@ do
 		if packageData[name] then
 			return packageData[name]
 		end
-		
+
 		local source = packageSource[name]
 		if not source then
 			error("`" .. name .. "` is not an existing package",2)
