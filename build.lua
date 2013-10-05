@@ -390,9 +390,12 @@ local function handleFile(path,file,sub)
 	end
 
 	if not sub and file:lower() == "cure.lua" then
-		--If it's a script, you want to make sure it can compile!
-		local f, e = loadstring(content)
-		if not f then print("Build error: "..path.." ("..e..")") end
+		-- If it's a script, you want to make sure it can compile!
+		local f, e = loadstring(content,'')
+		if not f then
+			print("WARNING: " .. e:gsub('^%[.-%]:','line '))
+		end
+
 		return {ClassName='Script';
 			Name={'string',"cure"};
 			Source={'ProtectedString',content};
@@ -406,9 +409,12 @@ local function handleFile(path,file,sub)
 	local name,ext = splitName(file)
 	ext = ext:lower()
 	if ext == "lua" then
-		--If it's a script, you want to make sure it can compile!
-		local f, e = loadstring(content)
-		if not f then print("Build error: "..path.." ("..e..")") end
+		-- If it's a script, you want to make sure it can compile!
+		local f, e = loadstring(content,'')
+		if not f then
+			print("WARNING: " .. e:gsub('^%[.-%]:','line '))
+		end
+
 		local subname,subext = splitName(name)
 		if subext:lower() == "script" then
 			return {ClassName='Script';
