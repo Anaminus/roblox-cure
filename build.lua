@@ -427,7 +427,8 @@ local function handleFile(path,file,sub)
 				Source={'ProtectedString',content};
 			}
 		else
-			local chunk = 2^12-1
+			-- maximum size of strings in replicated instances
+			local chunk = 200000 - 1
 			local length = #content
 			if length <= chunk then
 				return createValue('String',name,content)
