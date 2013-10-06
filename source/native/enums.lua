@@ -11,7 +11,7 @@ function enums:Register(name,definition)
 		object.Name = name
 		object.Parent = Enums
 	
-		for number,itemName in pairs(definition) do
+		for itemName,number in pairs(definition) do
 			local itemObject = Instance.new('IntValue')
 			itemObject.name = itemName
 			itemObject.Value = number
@@ -21,5 +21,25 @@ function enums:Register(name,definition)
 		return true
 	end
 end
+
+setmetatable(enums,{
+	__index = function(self,enumName)
+		local enum = Enums:FindFirstChild(enumName)
+		if enum then
+			return setmetatable({},{
+				__index = function(self,itemName)
+					local item = enum:FindFirstChild(itemName)
+					if item then
+						return item.Value
+					else
+						error("enum item `" .. tostring(itemName) .. "` does not exist",2)
+					end
+				end
+			})
+		else
+			error("enum `" .. tostring(enumName) .. "` does not exist",2)
+		end
+	end
+})
 
 return enums
