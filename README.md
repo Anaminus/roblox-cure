@@ -88,13 +88,13 @@ Configuration instance:
 - `native` (Configuration)
 
 	This folder contains packages that are included with Cure by default. The
-	current default packages are *network*, *settings*, and *spawner*. Any
+	current default packages are *network*, *settings*, *enums*, and *spawner*. Any
 	package in this folder will be available on both the server and clients.
 
 - `info` (Configuration)
 
 	Contains general information and documentation about the project. By
-	default, this folder contains documentation for the *network*, *settings*,
+	default, this folder contains documentation for the *network*, *settings*, *enums*,
 	and *spawner* packages.
 
 - `network` (Configuration)
@@ -105,6 +105,9 @@ Configuration instance:
 
 	Used by the *settings* package to contain setting objects. Value objects
 	may be added here as initial settings.
+
+- `enums` (Configuration)
+	Used by the *enums* package to contain enum objects. Enum objects are Configuration folders that contain integer value objects.
 
 
 ### Globals
