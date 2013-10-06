@@ -75,7 +75,7 @@ do
 	}
 	function settings:Add(key,type,value)
 		if key == "Add" or key == "Remove" or key == "Changed" then
-			error("'" .. key .. "' cannot used as a setting",2)
+			error("'" .. key .. "' cannot be used as a setting",2)
 		end
 
 		if Settings:FindFirstChild(key) then
