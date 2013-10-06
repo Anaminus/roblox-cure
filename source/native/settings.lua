@@ -1,4 +1,12 @@
-local Settings = cure:WaitForChild('settings')
+local Settings do
+	Settings = Game:GetService('ReplicatedStorage'):FindFirstChild("settings")
+	if not Settings then
+		Settings = Instance.new('Configuration')
+		Settings.Name = "settings"
+		Settings.Parent = Game:GetService('ReplicatedStorage')
+	end
+end
+
 local settings = {}
 
 local eventChanged do

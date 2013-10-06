@@ -1,4 +1,11 @@
-local Network = cure:WaitForChild('network')
+local Network do
+	Network = Game:GetService('ReplicatedStorage'):FindFirstChild("network")
+	if not Network then
+		Network = Instance.new('Configuration')
+		Network.Name = "network"
+		Network.Parent = Game:GetService('ReplicatedStorage')
+	end
+end
 
 ----------------------------------------------------------------
 ----------------------------------------------------------------
