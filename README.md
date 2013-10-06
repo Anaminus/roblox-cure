@@ -83,7 +83,7 @@ Configuration instance:
 	Contains packages and scripts, for clients and the server. This folder
 	contains two folders, `client` and `server`. Each of these folders contain
 	two more folders, `packages` and `scripts`. These are where your packages
-	and scripts go, repectively.
+	and scripts go, respectively.
 
 - `native` (Configuration)
 
