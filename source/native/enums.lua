@@ -13,7 +13,7 @@ function enums:Register(name,definition)
 	
 		for itemName,number in pairs(definition) do
 			local itemObject = Instance.new('IntValue')
-			itemObject.name = itemName
+			itemObject.Name = itemName
 			itemObject.Value = number
 			itemObject.Parent = object
 		end
