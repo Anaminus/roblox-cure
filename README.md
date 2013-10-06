@@ -15,7 +15,8 @@ to the framework. See [Structure](#structure) for information on each folder.
 
 Finally, there's the **main control script**. This brings the folders,
 packages, and scripts together to form the functionality of the Cure
-framework. This script runs once on each peer (the server and all clients).
+framework. This script comes in two flavors: one for the server, and one for
+each client.
 
 
 ### Code Representation
@@ -50,17 +51,6 @@ type of source depends on the Roblox class used:
 	list. Basically, treat IntValues as if they are replaced by the asset they
 	represent.
 
-- Script
-
-	A normal script. While these shouldn't actually be used, they are still
-	handled. When Cure detects a Script, it will simply enable it by setting
-	its Disabled property to false. However, if detected on the client, the
-	script will be copied to the player's PlayerGui, then enabled.
-
-- LocalScript
-
-	Follows the same rules as Scripts.
-
 Because of the way Roblox parses XML, whitespace at the start of strings are
 truncated. To get around this, if the first character in a string is
 whitespace or a "\" character, then the string will be encoded simply by
@@ -73,10 +63,13 @@ adding a "\" character to the beginning. To decode, if a string starts with a
 Cure consists of the following Roblox instances, all contained under a single
 Configuration instance:
 
-- `cure` (Script)
+- `cure.server` (Script)
 
-	The main control script. A LocalScript version is included as a child of
-	this Script, which is run on clients.
+	The main control script for the server.
+
+- `cure.client` (LocalScript)
+
+	The main control script for clients.
 
 - `peers` (Configuration)
 
@@ -87,24 +80,23 @@ Configuration instance:
 
 - `native` (Configuration)
 
-	This folder contains packages that are included with Cure by default. The
-	current default packages are *network*, *settings*, and *spawner*. Any
-	package in this folder will be available on both the server and clients.
+	This folder contains packages that are available on both clients and the
+	server. Cure comes with a few of these native packages built-in.
 
 - `info` (Configuration)
 
 	Contains general information and documentation about the project. By
-	default, this folder contains documentation for the *network*, *settings*,
-	and *spawner* packages.
-
-- `network` (Configuration)
-
-	Used by the *network* package to replicate network packets.
+	default, this folder contains documentation for the built-in native
+	packages.
 
 - `settings` (Configuration)
 
-	Used by the *settings* package to contain setting objects. Value objects
-	may be added here as initial settings.
+	Used by the *settings* native package to contain setting objects. Value
+	objects may be added here as initial settings.
+
+Note that the `native` folder, as well as the `packages` and `scripts` folders
+of each peer, may contain sub-folders. Cure will automatically recurse every
+folder, looking for sources.
 
 
 ### Globals
@@ -114,10 +106,12 @@ variables, they piggyback off of the environment of the main control script.
 This doesn't mean they all share the same environment, they just have read-
 only access to it.
 
-Some extra globals, as well as all native packages, are added to the main
-environment, and are therefore accessible to all scripts and packages. For
-convenience, they are also added to the `shared` table, for use by scripts
-outside of Cure.
+Some extra globals are added to the main environment, and are therefore
+accessible to all scripts and packages. For convenience, they are also added
+to the `shared` table, for use by scripts outside of Cure.
+
+Native packages are also added to the main environment automatically, under
+the name of the package (sub-folders do not make a difference).
 
 Currently, the following extra global variables are defined:
 
@@ -127,20 +121,21 @@ Currently, the following extra global variables are defined:
 	package to load. For example, a package source with the name of "example"
 	would be loaded by calling `require('example')`.
 
+	Note that a package contained within a sub-folder must be referenced by
+	its entire directory, separated by `.` characters. For example:
+
+		-- require `packages/foo/bar/package.lua`
+		require('foo.bar.package')
+
 	The results returned by the package are returned by `require`. If the
-	package has already been loaded, then the results are reused. Note that
-	the results are not added to the current environment, so it is not
-	sufficient enough to simply call `require('example')`. The results can be
-	acquired by using `example = require('example')`.
+	package has already been loaded, then the results are reused instead of
+	loading the package again. Note that the results are not added to the
+	current environment, so it is not sufficient enough to simply call
+	`require('example')`. The results can be acquired by using something like
+	`example = require('example')`.
 
 	Native packages may also be required, though it's usually not necessary,
 	since they're already available to the environment.
-
-- `cure`
-
-	The top Configuration object that contains all other objects in the Cure
-	structure. This provides an easy reference to these objects for packages
-	and scripts.
 
 - `IsServer`
 
@@ -154,14 +149,12 @@ Currently, the following extra global variables are defined:
 
 ### Run-time Procedure
 
-At run-time, Cure does the following things. The same general procedure goes
-for clients as well, unless noted otherwise.
+At run-time, the Cure server control script does the following things:
 
-1. **Gather source code from packages.**
+1. **Gather source code for server packages.**
 
-	Each source in the `peers.server.packages` folder (`peers.client.packages`
-	on the client) is converted to source code, then stored for later
-	requiring.
+	Each source in the `peers.server.packages` folder is converted to source
+	code, then stored for later requiring.
 
 2. **Run native packages.**
 
@@ -172,38 +165,67 @@ for clients as well, unless noted otherwise.
 	override normal packages that have the same name.
 
 	Each native package is available in the main environment, and in the
-	`shared` table, under the name of the package.
+	`shared` table, under the name of the package. Sub-folders do not affect
+	the name.
 
 3. **Run scripts.**
 
-	Each source in the `peers.server.scripts` folder (`peers.client.scripts`
-	on the client) is converted to source code, then executed.
+	Each source in the `peers.server.scripts` folder is converted to source
+	code, then executed.
 
-	Any Script instances found by the server are simply enabled. Any Script
-	instances found by a client are copied to the player's PlayerGui and
-	enabled. Note that this isn't reliable since the PlayerGui may not yet
-	exist at this point.
+4. **Gather source for client packages and scripts**
+
+	Each source in the `peers.client.packages` and `peers.client.scripts`
+	folders are converted to source code, then stored for later requests from
+	clients. Native package sources have also been stored similarly.
 
 4. **Listen for peers.**
 
-	Only done by the server. When a new peer is found, the client control
-	script is executed on that peer. To verify that everything is running
-	properly, the following handshake procedure occurs between the server and
-	client:
+	When a new peer is found, the client control script is executed on that
+	peer. The server creates a "CallStream" object, which serves the client
+	data that it needs in order to successfully load. The CallStream serves
+	the following requests:
 
-	1. **Server:** Create Backpack object and copy the client script to it.
-	2. **Server:** Wait for indication that client script is successfully running.
-	3. **Client:** Reliably remove self to ensure code is persistent.
-	4. **Client:** Send indication that the client script is successfully running with persistence.
-	5. **Client:** Wait for lists of natives, packages, and scripts.
-	6. **Server:** Send lists of natives, packages, and scripts.
+	- `initialized`
 
-	This handshake requires that the client's Character is not loaded
-	immediately. As a consequence, Character spawning cannot be handled
-	internally by Roblox. To remedy this, the **spawner** package is
-	available. This recreates the original functionality of character
-	spawning, with a few enhancements. If this package is included as a native
-	package, then Cure will utilize it automatically.
+		Indicates that the client is successfully running persistently. The
+		server returns a list of sources the client should request, which
+		includes the type of source, and the amount of source available for
+		that type.
+
+	- `source`
+
+		Requests a source. Requires two arguments: the type of source (native,
+		package, script), and a numerical index indicating which source.
+
+		Returns the full name, short name, and source code of the requested
+		source. The source code may span multiple values, if it is too large.
+
+	- `loaded`
+
+		Indicates that the client has completely finished loading, and the
+		server may end the CallStream and finish setting up the client.
+
+
+The Cure client control script runs the following procedure:
+
+1. Reliably remove self to ensure code is persistent.
+2. Wait until the DataModel has been completely loaded.
+3. Find the server's CallStream.
+4. Send call indicating that the client has initialized.
+5. Request client sources.
+6. Organize source code for packages.
+7. Run native packages.
+8. Run scripts.
+9. Send call indicating that the client has finished loading.
+
+
+This procedure requires that the client's Character is not loaded immediately.
+As a consequence, Character spawning cannot be handled internally by Roblox.
+To remedy this, the **spawner** package is available. This recreates the
+original functionality of character spawning, with a few enhancements. If this
+package is included as a native package, then Cure will utilize it
+automatically.
 
 
 ## External Editing

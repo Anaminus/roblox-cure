@@ -4,6 +4,9 @@ if _VERSION == 'Lua 5.2' then
 	unpack = table.unpack
 end
 
+-- maximum length of strings in replicated instances
+MAX_STRING_LENGTH = 200000 - 1
+
 local saveRBXM do
 	-- because of the way XML is parsed, leading spaces get truncated
 	-- so, simply add a "\" when a space or "\" is detected as the first character
@@ -382,6 +385,14 @@ local valueTypes = {
 	end;
 }
 
+local function checkSyntax(source)
+	-- If it's a script, you want to make sure it can compile!
+	local f, e = loadstring(source,'')
+	if not f then
+		print("WARNING: " .. e:gsub('^%[.-%]:',"line "))
+	end
+end
+
 local function handleFile(path,file,sub)
 	local content do
 		local f = assert(io.open(path))
@@ -389,32 +400,24 @@ local function handleFile(path,file,sub)
 		f:close()
 	end
 
-	if not sub and file:lower() == "cure.lua" then
-		-- If it's a script, you want to make sure it can compile!
-		local f, e = loadstring(content,'')
-		if not f then
-			print("WARNING: " .. e:gsub('^%[.-%]:','line '))
-		end
-
+	if not sub and file:lower() == "cure.server.lua" then
+		checkSyntax(content)
 		return {ClassName='Script';
-			Name={'string',"cure"};
+			Name={'string',"cure.server"};
 			Source={'ProtectedString',content};
-			{ClassName='LocalScript';
-				Name={'string',"cure"};
-				Source={'ProtectedString',content};
-			};
+		}
+	elseif not sub and file:lower() == "cure.client.lua" then
+		checkSyntax(content)
+		return {ClassName='LocalScript';
+			Name={'string',"cure.client"};
+			Source={'ProtectedString',content};
 		}
 	end
 
 	local name,ext = splitName(file)
 	ext = ext:lower()
 	if ext == "lua" then
-		-- If it's a script, you want to make sure it can compile!
-		local f, e = loadstring(content,'')
-		if not f then
-			print("WARNING: " .. e:gsub('^%[.-%]:','line '))
-		end
-
+		checkSyntax(content)
 		local subname,subext = splitName(name)
 		if subext:lower() == "script" then
 			return {ClassName='Script';
@@ -427,8 +430,7 @@ local function handleFile(path,file,sub)
 				Source={'ProtectedString',content};
 			}
 		else
-			-- maximum size of strings in replicated instances
-			local chunk = 200000 - 1
+			local chunk = MAX_STRING_LENGTH
 			local length = #content
 			if length <= chunk then
 				return createValue('String',name,content)
