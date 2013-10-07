@@ -39,10 +39,10 @@ type of source depends on the Roblox class used:
 
 - BoolValue
 
-	Indicates a divided, multi-part source. Because Roblox tends to crash when
-	replicating large strings, large source code is split into multiple parts.
-	These parts are contained in StringValues, which are children of the
-	BoolValue.
+	Indicates a divided, multi-part source. Because Roblox tends to crash or
+	disconnect when replicating large strings, large source code is split into
+	multiple parts. These parts are contained in StringValues, which are
+	children of the BoolValue.
 
 - IntValue
 
@@ -61,7 +61,8 @@ adding a "\" character to the beginning. To decode, if a string starts with a
 ### Structure
 
 Cure consists of the following Roblox instances, all contained under a single
-Configuration instance:
+Configuration instance (the "cure container"). The cure container should be a
+child of ServerScriptService.
 
 - `cure.server` (Script)
 
@@ -115,7 +116,7 @@ the name of the package (sub-folders do not make a difference).
 
 Currently, the following extra global variables are defined:
 
-- `require ( package )`
+- `require ( package, fetch )`
 
 	A function that loads a package. The first argument is the name of the
 	package to load. For example, a package source with the name of "example"
@@ -149,6 +150,11 @@ Currently, the following extra global variables are defined:
 
 	A bool indicating whether the peer is a client. Should always be opposite
 	of `IsServer`.
+
+- `cure`
+
+	A reference to the cure container. This global is only available on the
+	server.
 
 
 ### Run-time Procedure
