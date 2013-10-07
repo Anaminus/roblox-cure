@@ -18,7 +18,7 @@ getfenv().script = nil
 cure = script.Parent
 shared.cure = cure
 
-local Native = cure:WaitForChild("native")
+local Global = cure:WaitForChild("global")
 local ServerPeer = cure:WaitForChild("peers"):WaitForChild("server")
 local Packages = ServerPeer:WaitForChild("packages")
 local Scripts = ServerPeer:WaitForChild("scripts")
@@ -161,13 +161,13 @@ do
 
 	shared.require = require
 
----- Native packages
+---- Global packages
 
-	local nativePackages = {}
+	local globalPackages = {}
 
-	-- retrieve native sources
-	local clientNative = {}
-	clientData.native = clientNative
+	-- retrieve global sources
+	local clientGlobal = {}
+	clientData.global = clientGlobal
 
 	local n = 0
 	local function r(object,preName)
@@ -179,8 +179,8 @@ do
 			if source then
 				n = n + 1
 				packageSource[longName] = source
-				nativePackages[n] = {longName,shortName}
-				clientNative[n] = {longName,shortName,source}
+				globalPackages[n] = {longName,shortName}
+				clientGlobal[n] = {longName,shortName,source}
 			else
 				-- only recurse non-source objects
 				r(children[i],longName .. ".")
@@ -188,13 +188,13 @@ do
 		end
 	end
 
-	r(Native,"")
+	r(Global,"")
 
-	-- require native packages
+	-- require global packages
 	local env = getfenv()
-	for i = 1,#nativePackages do
-		local long = nativePackages[i][1]
-		local short = nativePackages[i][2]
+	for i = 1,#globalPackages do
+		local long = globalPackages[i][1]
+		local short = globalPackages[i][2]
 		-- FIX: top-level `require` in lower-level area
 		local result = require(long)
 		env[short] = result
@@ -277,7 +277,7 @@ if CureClient then
 			-- client has initialized; return client source info
 				return {
 					{'package',#clientData.package};
-					{'native',#clientData.native};
+					{'global',#clientData.global};
 					{'script',#clientData.script};
 				}
 			elseif func == 'source' then
