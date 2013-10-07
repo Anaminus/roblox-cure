@@ -306,7 +306,7 @@ if CureClient then
 			-- end the call stream
 			CallStream:Destroy()
 			if spawner then
-				spawner.add(player)
+				spawner.Add(player)
 			end
 		end
 
@@ -318,7 +318,7 @@ if CureClient then
 
 	if spawner then
 		Players.PlayerRemoving:connect(function(player)
-			spawner.remove(player)
+			spawner.Remove(player)
 		end)
 	end
 end
