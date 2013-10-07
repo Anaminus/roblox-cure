@@ -104,28 +104,28 @@ do
 
 	shared.require = require
 
----- Native packages
+---- Global packages
 
-	local nativePackages = {}
-	-- retrieve native sources
+	local globalPackages = {}
+	-- retrieve global sources
 	do
-		local native = clientData.native
-		for i = 1,#native do
-			packageSource[native[i][1]] = native[i][3]
-			nativePackages[#nativePackages+1] = {native[i][1],native[i][2]}
+		local global = clientData.global
+		for i = 1,#global do
+			packageSource[global[i][1]] = global[i][3]
+			globalPackages[#globalPackages+1] = {global[i][1],global[i][2]}
 		end
 	end
 
-	-- native packages run ordered by long name
-	table.sort(nativePackages,function(a,b)
+	-- global packages run ordered by long name
+	table.sort(globalPackages,function(a,b)
 		return a[1] < b[1]
 	end)
 
-	-- require native packages
+	-- require global packages
 	local env = getfenv()
-	for i = 1,#nativePackages do
-		local long = nativePackages[i][1]
-		local short = nativePackages[i][2]
+	for i = 1,#globalPackages do
+		local long = globalPackages[i][1]
+		local short = globalPackages[i][2]
 		-- FIX: top-level `require` in lower-level area
 		local result = require(long)
 		env[short] = result

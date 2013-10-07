@@ -79,23 +79,23 @@ child of ServerScriptService.
 	two more folders, `packages` and `scripts`. These are where your packages
 	and scripts go, respectively.
 
-- `native` (Configuration)
+- `global` (Configuration)
 
 	This folder contains packages that are available on both clients and the
-	server. Cure comes with a few of these native packages built-in.
+	server. Cure comes with a few of these global packages built-in.
 
 - `info` (Configuration)
 
 	Contains general information and documentation about the project. By
-	default, this folder contains documentation for the built-in native
+	default, this folder contains documentation for the built-in global
 	packages.
 
 - `settings` (Configuration)
 
-	Used by the *settings* native package to contain setting objects. Value
+	Used by the *settings* global package to contain setting objects. Value
 	objects may be added here as initial settings.
 
-Note that the `native` folder, as well as the `packages` and `scripts` folders
+Note that the `global` folder, as well as the `packages` and `scripts` folders
 of each peer, may contain sub-folders. Cure will automatically recurse every
 folder, looking for sources.
 
@@ -111,7 +111,7 @@ Some extra globals are added to the main environment, and are therefore
 accessible to all scripts and packages. For convenience, they are also added
 to the `shared` table, for use by scripts outside of Cure.
 
-Native packages are also added to the main environment automatically, under
+Global packages are also added to the main environment automatically, under
 the name of the package (sub-folders do not make a difference).
 
 Currently, the following extra global variables are defined:
@@ -135,7 +135,7 @@ Currently, the following extra global variables are defined:
 	`require('example')`. The results can be acquired by using something like
 	`example = require('example')`.
 
-	Native packages may also be required, though it's usually not necessary,
+	Global packages may also be required, though it's usually not necessary,
 	since they're already available to the environment.
 
 	Normally, if a package does not exist, then require will throw an error.
@@ -166,15 +166,15 @@ At run-time, the Cure server control script does the following things:
 	Each source in the `peers.server.packages` folder is converted to source
 	code, then stored for later requiring.
 
-2. **Run native packages.**
+2. **Run global packages.**
 
-	Each source in the `native` folder is converted to source code, required,
+	Each source in the `global` folder is converted to source code, required,
 	and added to the main environment automatically. This means that they
-	share the same space as normal packages, which allows native packages to
-	require other native packages. It also means that native packages will
+	share the same space as normal packages, which allows global packages to
+	require other global packages. It also means that global packages will
 	override normal packages that have the same name.
 
-	Each native package is available in the main environment, and in the
+	Each global package is available in the main environment, and in the
 	`shared` table, under the name of the package. Sub-folders do not affect
 	the name.
 
@@ -187,7 +187,7 @@ At run-time, the Cure server control script does the following things:
 
 	Each source in the `peers.client.packages` and `peers.client.scripts`
 	folders are converted to source code, then stored for later requests from
-	clients. Native package sources have also been stored similarly.
+	clients. Global package sources have also been stored similarly.
 
 4. **Listen for peers.**
 
@@ -205,7 +205,7 @@ At run-time, the Cure server control script does the following things:
 
 	- `source`
 
-		Requests a source. Requires two arguments: the type of source (native,
+		Requests a source. Requires two arguments: the type of source (global,
 		package, script), and a numerical index indicating which source.
 
 		Returns the full name, short name, and source code of the requested
@@ -225,7 +225,7 @@ The Cure client control script runs the following procedure:
 4. Send call indicating that the client has initialized.
 5. Request client sources.
 6. Organize source code for packages.
-7. Run native packages.
+7. Run global packages.
 8. Run scripts.
 9. Send call indicating that the client has finished loading.
 
@@ -234,7 +234,7 @@ This procedure requires that the client's Character is not loaded immediately.
 As a consequence, Character spawning cannot be handled internally by Roblox.
 To remedy this, the **spawner** package is available. This recreates the
 original functionality of character spawning, with a few enhancements. If this
-package is included as a native package, then Cure will utilize it
+package is included as a global package, then Cure will utilize it
 automatically.
 
 
