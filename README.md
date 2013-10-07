@@ -117,7 +117,7 @@ Currently, the following extra global variables are defined:
 
 - `require ( package )`
 
-	A function that loads a package. The only argument is the name of the
+	A function that loads a package. The first argument is the name of the
 	package to load. For example, a package source with the name of "example"
 	would be loaded by calling `require('example')`.
 
@@ -136,6 +136,10 @@ Currently, the following extra global variables are defined:
 
 	Native packages may also be required, though it's usually not necessary,
 	since they're already available to the environment.
+
+	Normally, if a package does not exist, then require will throw an error.
+	However, if the second, optional argument to require is not false, then
+	require will return no value instead.
 
 - `IsServer`
 
