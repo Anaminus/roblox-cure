@@ -72,12 +72,16 @@ child of ServerScriptService.
 
 	The main control script for clients.
 
-- `peers` (Configuration)
+- `server` (Configuration)
 
-	Contains packages and scripts, for clients and the server. This folder
-	contains two folders, `client` and `server`. Each of these folders contain
-	two more folders, `packages` and `scripts`. These are where your packages
-	and scripts go, respectively.
+	Contains packages and scripts for the server. This folder contains two
+	folders, `packages` and `scripts`. These are where your packages and
+	scripts go, respectively. Packages and scripts.
+
+- `client` (Configuration)
+
+	Similar to the `server` folder, but contains packages and scripts that are
+	to be run on clients.
 
 - `global` (Configuration)
 
@@ -158,8 +162,8 @@ At run-time, the Cure server control script does the following things:
 
 1. **Gather source code for server packages.**
 
-	Each source in the `peers.server.packages` folder is converted to source
-	code, then stored for later requiring.
+	Each source in the `server.packages` folder is converted to source code,
+	then stored for later requiring.
 
 2. **Run global packages.**
 
@@ -175,14 +179,14 @@ At run-time, the Cure server control script does the following things:
 
 3. **Run scripts.**
 
-	Each source in the `peers.server.scripts` folder is converted to source
-	code, then executed.
+	Each source in the `server.scripts` folder is converted to source code,
+	then executed.
 
 4. **Gather source for client packages and scripts**
 
-	Each source in the `peers.client.packages` and `peers.client.scripts`
-	folders are converted to source code, then stored for later requests from
-	clients. Global package sources have also been stored similarly.
+	Each source in the `client.packages` and `client.scripts` folders are
+	converted to source code, then stored for later requests from clients.
+	Global package sources have also been stored similarly.
 
 4. **Listen for peers.**
 

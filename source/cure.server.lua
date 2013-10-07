@@ -19,10 +19,10 @@ cure = script.Parent
 shared.cure = cure
 
 local Global = cure:WaitForChild("global")
-local ServerPeer = cure:WaitForChild("peers"):WaitForChild("server")
+local ServerPeer = cure:WaitForChild("server")
 local Packages = ServerPeer:WaitForChild("packages")
 local Scripts = ServerPeer:WaitForChild("scripts")
-local ClientPeer = cure:WaitForChild("peers"):WaitForChild("client")
+local ClientPeer = cure:WaitForChild("client")
 local ClientPackages = ClientPeer:WaitForChild("packages")
 local ClientScripts = ClientPeer:WaitForChild("scripts")
 
