@@ -328,7 +328,7 @@ local function recurseDir(path,obj,r)
 end
 
 local rbxmObj = recurseDir("source",{ClassName='Configuration', Name={'string',"cure"}})
-saveRBXM(rbxmObj,"build/cure.rbxm")
+saveRBXM(rbxmObj,"build/" .. ((...) or "cure.rbxm"))
 
 local f = io.open("locations.txt")
 if f then

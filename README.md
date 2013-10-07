@@ -287,6 +287,10 @@ your place. A Sublime Text project file is provided to get started.
 	For convenience, Lua files are checked for syntax errors. Note that a file
 	with an error will still be built regardless.
 
+	The output file name can be specified by giving it as an option to
+	build.lua. Defaults to "cure.rbxm".
+
+		lua build.lua [filename]
 
 ### Building
 
