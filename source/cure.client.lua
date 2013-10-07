@@ -80,7 +80,7 @@ do
 		packageSource[packages[i][1]] = packages[i][3]
 	end
 
-	function require(name)
+	function require(name,fetch)
 		name = tostring(name)
 
 		if packageData[name] then
@@ -89,7 +89,11 @@ do
 
 		local source = packageSource[name]
 		if not source then
-			error("`" .. name .. "` is not an existing package",2)
+			if fetch then
+				return
+			else
+				error("`" .. name .. "` is not an existing package",2)
+			end
 		end
 
 		local result = runSource(name,source,true,2)
