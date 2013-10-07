@@ -16,7 +16,7 @@ Provides replacement functionality for character spawning, which is normally ove
 
 ## Settings
 
-This package depends on the **Settings** package. The following settings are introduced:
+If the **settings** package is available, then this package will utilize it by adding the following settings:
 
 - CharacterAutoLoads
 
