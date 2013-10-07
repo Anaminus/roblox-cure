@@ -1,68 +1,81 @@
 # Network Package
 
-Provides basic communication between peers.
+Provides communication between peers.
 
-Communication is done using Value objects, which are referred to as "packets".
-This package uses the "network" Configuration object to replicate packets to
-every peer.
+Communication is done by abstracting RemoteFunction objects as "sockets" and
+"listeners". All network related objects are contained in the "network"
+Configuration object, which is stored in the ReplicatedStorage service.
 
 ## API
 
-- `network.send ( ref, type, data )`
+- `network.Socket ( peer, port )`
 
-	Sends a packet of data.
+	Returns a new Socket object.
 
-	- `ref` is a string that allows packets to be filtered by receiving peers.
-	- `type` is a [dataType](#datatype), which indicates the type of data to
-      send.
-	- `data` is a [dataValue](#datavalue), which is the actual data to send.
+	*peer* is a Player object representing the peer to connect to. A nil value
+	indicates the server as the peer.
 
+	*port* is an integer between 0 and 65536. It is used as a filter for
+	listeners. Defaults to 0.
 
-- `network.receive ( pattern, callback )`
+- `network.Listener ( port, callback )`
 
-	Returns a *receiver*, an object that receives packets of data.
+	Returns a new Listener object.
 
-	- `pattern` is a Lua pattern string used to match the `ref` value of a
-      packet.
-	- `callback` is a function called when a matched packet is received. The
-      following parameters are passed:
-		- `data`, the [dataValue](#datavalue) received from the packet.
-		- `ref`, the reference string of the packet.
+	*port* is the port number to listen on. The listener will only listen for
+	sockets with the same port number.
 
-	The receiver object is a table with the following fields:
+	*callback* is a function called when the listener detects a connection.
+	The only parameter passed to the callback is a socket object representing
+	the detected connection.
 
-	- `receiver.pattern` : The pattern used to match a packet's reference
-      value. Can be modified.
-	- `receiver.callback` : The function called when a packet is received. Can
-      be modified.
-	- `receiver.connected` : A bool indicating whether the receiver is
-      connected.
-	- `receiver:disconnect()` : Stops the receiver from receiving any more
-      packets.
+## Socket
 
-### Types
+A Socket represents a connection between two peers.
 
-For reference, the following types are defined.
+Sockets have the following members:
 
-#### dataValue
+- `Socket.Recipient`
 
-May be any value for which a Value object exists (i.e. IntValue).
+	A Player object representing the peer the socket is connected to. Will be
+	`true` if the recipient is the server.
 
-It may also be an array containing dataValues, including more arrays.
+- `Socket.Closed`
 
-#### dataType
+	A bool indicating whether the socket has been closed.
 
-A string indicating the type of the corresponding dataValue. Case-insensitive.
+- `Socket:Send ( ... )`
 
-Should be an array if the dataValue is also an array.
+	Sends data to the recipient.
 
-Examples:
+- `Socket:Receive( )`
 
-	dataType:  'Vector3'
-	dataValue: Vector3.new( 10, 10, 10 )
+	Receives data from the recipient. Received data is buffered, so this
+	function will block if the buffer is empty.
 
-	dataType:  { 'int', 'int', 'int' }
-	dataValue: {    10,    10,    10 }
+	The values returned correspond to the arguments given to a Send call.
 
-	dataType:  { 'bool', { 'int', 'int', 'int' }, 'string', 'number' }
-	dataValue: {   true, {    10,    10,    10 },  "hello",  math.pi }
+- `Socket:Close ( )`
+
+	Closes the connection. Subsequent calls to Send and Receive will throw an
+	error. If Receive is blocking, then it will throw an error.
+
+## Listener
+
+A Listener is used to detect incoming connections from other peers.
+
+Listeners have the following members:
+
+- `Listener.Port`
+
+	The port the listener is listening on. Can be modified.
+
+- `Listener.Callback`
+
+	A function called when a connection is detected. The only parameter passed
+	to the callback is a socket object representing the detected connection.
+	Can be modified.
+
+- `Listener:Close ( )`
+
+	Closes the listener.
