@@ -2,10 +2,16 @@ local neutralSpawns = {}
 local teamSpawns = {}
 local connections = {}
 
-settings = require 'settings'
-
-settings:Add('CharacterAutoLoads','bool',true)
-settings:Add('RespawnCooldown','number',5)
+settings = require ('settings', true)
+if settings then
+	settings:Add('CharacterAutoLoads','bool',true)
+	settings:Add('RespawnCooldown','number',5)
+else
+	settings = {
+		CharacterAutoLoads = true;
+		RespawnCooldown = 5;
+	}
+end
 
 local function getHumanoid(character)
 	local children = character:GetChildren()
