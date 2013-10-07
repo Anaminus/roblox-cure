@@ -272,30 +272,21 @@ your place. A Sublime Text project file is provided to get started.
 	Configuration objects, and files are converted based on their extensions.
 	The name of a file or folder is used as the name of the object.
 
-	- `*.lua`: Converts to a StringValue or BoolValue source (depending on length of content).
+	- `*.lua`: Converts to a StringValue or BoolValue source (depending on
+      length of content).
 	- `*.script.lua`: Converts to a Script source.
 	- `*.localscript.lua`: Converts to a LocalScript source.
-	- `*.asset`: Converts to an IntValue source. The content of the file is the asset ID.
-	- `*.*` (anything else): Converts to a disabled Script whose Source is commented out.
+	- `*.asset`: Converts to an IntValue source. The content of the file is
+      the asset ID.
+	- `*.value`: Converts to a StringValue instance. The content is some value
+      in Lua format (i.e. true, "string", etc).
+	- `*.*` (anything else): Converts to a disabled Script whose Source is
+      commented out.
 	- `.gitignore`: Ignored, so that empty folders may be committed with git.
 
 	For convenience, Lua files are checked for syntax errors. Note that a file
 	with an error will still be built regardless.
 
-	Value objects may also be created by using the `.value` extension:
-
-	- `*.bool.value`: Content that is "0", "false", "nil", "no", "null", or empty, becomes false (case-insensitive). Anything else becomes true.
-	- `*.brickcolor.value`: Content is the integer representation of a BrickColor.
-	- `*.cframe.value`: Content is 12 seperated numbers (whitespace, commas, and semi-colons).
-	- `*.color3.value`: Content is 3 separated numbers (r, g, b), or hexadecimal ("#FFFFFF").
-	- `*.doubleconstrained.value`: Content is a single number.
-	- `*.intconstrained.value`: Content is a single integer.
-	- `*.int.value`: Content is a single integer.
-	- `*.number.value`: Content is a single number.
-	- `*.object.value`: Content is blank (not fully implemented).
-	- `*.ray.value`: Content is 6 seperated numbers (origin Vector3, direction Vector3).
-	- `*.string.value`: Content is anything (non-binary).
-	- `*.vector3.value`: Content is 3 seperated numbers (x, y, z).
 
 ### Building
 
