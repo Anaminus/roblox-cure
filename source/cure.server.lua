@@ -15,7 +15,9 @@ shared.IsClient = IsClient
 local script = script
 getfenv().script = nil
 
-local cure = script.Parent
+cure = script.Parent
+shared.cure = cure
+
 local Native = cure:WaitForChild("native")
 local ServerPeer = cure:WaitForChild("peers"):WaitForChild("server")
 local Packages = ServerPeer:WaitForChild("packages")
