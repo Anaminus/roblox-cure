@@ -1,8 +1,8 @@
 # Settings Package
 
-Provides global settings across all peers.
-
-Settings are stored as Value objects in the "settings" Configuration object. Value objects may be added here as initial settings.
+Provides global settings across all peers. Settings are stored as Value
+objects in the "settings" Configuration object. Value objects may be added
+here as initial settings.
 
 
 ## API
@@ -12,7 +12,8 @@ Settings are stored as Value objects in the "settings" Configuration object. Val
 	Adds a new setting. Returns whether the setting was successfully added.
 
 	- `key` is the name of the setting.
-	- `type` is the setting's value type. May be any type for which a Value object exists (i.e. "int" for IntValue). Case-insensitive.
+	- `type` is the setting's value type. May be any type for which a Value
+      object exists (i.e. "int" for IntValue). Case-insensitive.
 	- `value` is the initial value of the setting.
 
 	"Add", "Remove", and "Changed" cannot be used as keys.
