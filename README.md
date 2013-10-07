@@ -90,11 +90,6 @@ child of ServerScriptService.
 	default, this folder contains documentation for the built-in global
 	packages.
 
-- `settings` (Configuration)
-
-	Used by the *settings* global package to contain setting objects. Value
-	objects may be added here as initial settings.
-
 Note that the `global` folder, as well as the `packages` and `scripts` folders
 of each peer, may contain sub-folders. Cure will automatically recurse every
 folder, looking for sources.
