@@ -8,12 +8,12 @@ overridden by Cure. Not available to clients.
 
 - `spawner.Add ( player )`
 
-	Adds a player to the spawner. Usually used with Player.PlayerAdded.
+	Adds a player to the spawner. Usually used with Players.PlayerAdded.
 
 - `spawner.Remove ( player )`
 
 	Removes a player from the spawner. Usually used with
-	Player.PlayerRemoving.
+	Players.PlayerRemoving.
 
 - `spawner.Settings`
 
