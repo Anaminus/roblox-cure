@@ -272,7 +272,9 @@ local function createSocket(peer,remote)
 			remoteConn:disconnect()
 			peerConn:disconnect()
 			socketClose(peer,remote)
-			remote:Destroy()
+			Spawn(function()
+				remote:Destroy()
+			end)
 		end
 	end
 
