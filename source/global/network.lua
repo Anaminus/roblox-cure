@@ -6,7 +6,7 @@ if not Network then
 	Network.Parent = Game:GetService('ReplicatedStorage')
 end
 
--- MessageStream is used by peers to send socket metadata.
+-- MessageStream is used by peers to send and receive socket metadata.
 local MessageStream = Network:FindFirstChild("MessageStream")
 if not MessageStream then
 	MessageStream = Instance.new('RemoteEvent')
@@ -271,6 +271,9 @@ function network.Socket(peer,port)
 		error("invalid port number",2)
 	end
 
+	-- Blocks the thread if it so happens that the recipient peer's network
+	-- library has not yet finished initializing (otherwise it wouldn't detect
+	-- our new-remote message).
 	waitForPeer(peer)
 
 	local remote = Instance.new('RemoteFunction')
@@ -278,8 +281,9 @@ function network.Socket(peer,port)
 	remote.Parent = Network
 
 	local socket = createSocket(peer,remote)
-	-- remote should replicate properly since it has been added to to the game
-	-- hierarchy
+	-- Remote should replicate properly since it has been added to to the game
+	-- hierarchy. However, this assumes that the object will always replicate
+	-- before the message.
 	SendMessage(peer,MessageNewRemote,remote,port)
 	while true do
 		-- FIX: It may be possible for the receive message to have been sent
