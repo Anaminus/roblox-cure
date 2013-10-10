@@ -15,15 +15,15 @@ Configuration object, which is stored in the ReplicatedStorage service.
 	*peer* is a Player object representing the peer to connect to. A nil value
 	indicates the server as the peer.
 
-	*port* is an integer between 0 and 65536. It is used as a filter for
-	listeners. Defaults to 0.
+	*port* is a string that contains between 1 and 32 printable characters. It
+	is used as a filter for listeners. Defaults to "0".
 
 - `network.Listener ( port, callback )`
 
 	Returns a new Listener object.
 
-	*port* is the port number to listen on. The listener will only listen for
-	sockets with the same port number.
+	*port* is the port string to listen for. The listener will only listen for
+	sockets with the same port string.
 
 	*callback* is a function called when the listener detects a connection.
 	The only parameter passed to the callback is a socket object representing

@@ -25,14 +25,20 @@ Network.ChildRemoved:connect(function(c)
 	end
 end)
 
-local function isPortNumber(port)
-	if type(port) ~= 'number' then
+local function isPortValue(port)
+	if type(port) == 'number' then
+	-- if value is a number, convert it to a string
+		port = tostring(port)
+	elseif type(port) ~= 'string' then
+	-- otherwise, value must be a string
 		return false
 	end
-	if math.floor(port) ~= port then
+	if #port < 1 or #port > 32 then
+	-- string must contain between 1 and 32 characters
 		return false
 	end
-	if port < 0 or port > 2^16-1 then
+	if port:match('[^\32-\126]') then
+	-- string may only contain basic printable characters
 		return false
 	end
 	return true
@@ -267,7 +273,7 @@ local function createSocket(peer,remote)
 end
 
 function network.Socket(peer,port)
-	if not isPortNumber(port) then
+	if not isPortValue(port) then
 		error("invalid port number",2)
 	end
 
@@ -317,7 +323,7 @@ local listeners = {}
 -- Fix: Listener will fail to detect existing remotes if port changes. Allow
 --      modifiable ports?
 MessageTypes[MessageNewRemote] = function(peer,remote,port)
-	if not isPortNumber(port) or not remote then
+	if not isPortValue(port) or not remote then
 		return
 	end
 
@@ -334,7 +340,7 @@ MessageTypes[MessageNewRemote] = function(peer,remote,port)
 end
 
 function network.Listener(port,callback)
-	if not isPortNumber(port) then
+	if not isPortValue(port) then
 		error("invalid port number",2)
 	end
 
