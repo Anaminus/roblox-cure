@@ -312,10 +312,9 @@ function network.Socket(peer,port)
 	return socket
 end
 
--- sets up a socket from a successful detection
-local function linkListener(listener,peer,remote)
-	local socket = createSocket(peer,remote)
-	SendMessage(peer,MessageRemoteReady,remote)
+-- tells the peer that the socket is ready
+local function linkListener(listener,socket)
+	SendMessage(socket.Recipient,MessageRemoteReady,socket.Remote)
 
 	if listener.Callback then
 		listener.Callback(socket)
@@ -329,7 +328,6 @@ local listeners = {}
 
 -- FIX?: Can malicious clients send unlimited new-remote messages? Roblox may
 --       already throttle data sent by remotes.
--- FIX: Handle sockets being closed before being detected by a listener.
 -- Fix: Listener will fail to detect existing remotes if port changes. Allow
 --      modifiable ports?
 MessageTypes[MessageNewRemote] = function(peer,remote,port)
@@ -337,16 +335,20 @@ MessageTypes[MessageNewRemote] = function(peer,remote,port)
 		return
 	end
 
+	-- create a socket for the new remote
+	local socket = createSocket(peer,remote)
+
 	-- check to see if any listeners match this new remote
 	for i = 1,#listeners do
 		if listeners[i].Port == port then
-			linkListener(listeners[i],peer,remote)
+			linkListener(listeners[i],socket)
 			return
 		end
 	end
 
 	-- no listeners matched, so queue up remote data for later
-	table.insert(remoteData,{port,peer,remote})
+	table.insert(remoteData,{port,socket})
+	-- detect close messages sent through the remote
 end
 
 function network.Listener(port,callback)
@@ -375,7 +377,7 @@ function network.Listener(port,callback)
 		local data = remoteData[i]
 		if data[1] == listener.Port then
 			table.remove(remoteData,i)
-			linkListener(listener,data[2],data[3])
+			linkListener(listener,data[2])
 			n = n - 1
 		else
 			i = i + 1
