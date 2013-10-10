@@ -40,6 +40,10 @@ Sockets have the following members:
 	A Player object representing the peer the socket is connected to. Will be
 	`true` if the recipient is the server.
 
+- `Socket.Remote`
+
+	The underlying remote object the socket is associated with.
+
 - `Socket.Closed`
 
 	A bool indicating whether the socket has been closed.
