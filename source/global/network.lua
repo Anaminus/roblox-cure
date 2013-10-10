@@ -209,7 +209,7 @@ local function createSocket(peer,remote)
 	local closed = false
 
 	-- ensure remote persists
-	local conn = Network.ChildRemoved:connect(function(c)
+	local remoteConn = Network.ChildRemoved:connect(function(c)
 		if c == remote then
 			c.Parent = Network
 		end
@@ -236,7 +236,7 @@ local function createSocket(peer,remote)
 		elseif method == SocketClose then
 			closed = true
 			socket.Closed = true
-			conn:disconnect()
+			remoteConn:disconnect()
 			halt.Value = not halt.Value
 			Spawn(function()
 				remote:Destroy()
@@ -257,13 +257,20 @@ local function createSocket(peer,remote)
 		return unpack(table.remove(receiveBuffer,1))
 	end
 
-	-- FIX: Close socket when peer disconnects
+	-- close the socket if the peer disconnects
+	local peerConn = Game:GetService('Players').PlayerRemoving:connect(function(player)
+		if player == peer then
+			socket:Close()
+		end
+	end)
+
 	function socket:Close()
 		if not closed then
 			closed = true
 			socket.Closed = true
 			socket.Recipient = nil
-			conn:disconnect()
+			remoteConn:disconnect()
+			peerConn:disconnect()
 			socketClose(peer,remote)
 			remote:Destroy()
 		end
