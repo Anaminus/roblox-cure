@@ -204,6 +204,7 @@ local network = {}
 local function createSocket(peer,remote)
 	local socket = {
 		Recipient = peer;
+		Remote = remote;
 		Closed = false;
 	}
 	local closed = false
