@@ -282,7 +282,7 @@ local function createSocket(peer,remote)
 end
 
 function network.Socket(peer,port)
-	port = assertPortValue(port)
+	port = assertPortValue(port or "0")
 
 	-- Blocks the thread if it so happens that the recipient peer's network
 	-- library has not yet finished initializing (otherwise it wouldn't detect
@@ -349,10 +349,10 @@ MessageTypes[MessageNewRemote] = function(peer,remote,port)
 end
 
 function network.Listener(port,callback)
-	port = assertPortValue(port)
+	port = assertPortValue(port or "0")
 
 	local listener = {
-		Port = port or 0;
+		Port = port;
 		Callback = callback;
 	}
 
