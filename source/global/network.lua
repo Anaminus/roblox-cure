@@ -361,6 +361,29 @@ function network.Listener(port,callback)
 		Callback = callback;
 	}
 
+	local function checkRemotes()
+		-- detect any unhandled remotes
+		local i,n = 1,#remoteData
+		while i <= n do
+			local data = remoteData[i]
+			if data[1] == listener.Port then
+				table.remove(remoteData,i)
+				linkListener(listener,data[2])
+				n = n - 1
+			else
+				i = i + 1
+			end
+		end
+	end
+
+	function listener:SetPort(port)
+		if not isPortValue(port) then
+			error("invalid port number",2)
+		end
+		listener.Port = port
+		checkRemotes()
+	end
+
 	function listener:Close()
 		for i = 1,#listeners do
 			if listener[i] == self then
@@ -371,18 +394,7 @@ function network.Listener(port,callback)
 	end
 
 	table.insert(listeners,listener)
-	-- detect any remotes made before this listener was created
-	local i,n = 1,#remoteData
-	while i <= n do
-		local data = remoteData[i]
-		if data[1] == listener.Port then
-			table.remove(remoteData,i)
-			linkListener(listener,data[2])
-			n = n - 1
-		else
-			i = i + 1
-		end
-	end
+	checkRemotes()
 
 	return listener
 end
