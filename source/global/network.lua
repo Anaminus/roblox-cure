@@ -25,23 +25,22 @@ Network.ChildRemoved:connect(function(c)
 	end
 end)
 
-local function isPortValue(port)
+local function assertPortValue(port,err)
 	if type(port) == 'number' then
 	-- if value is a number, convert it to a string
 		port = tostring(port)
-	elseif type(port) ~= 'string' then
+	elseif type(port) ~= 'string'
 	-- otherwise, value must be a string
-		return false
-	end
-	if #port < 1 or #port > 32 then
+	or #port < 1 or #port > 32
 	-- string must contain between 1 and 32 characters
-		return false
-	end
-	if port:match('[^\32-\126]') then
+	or port:match('[^\32-\126]') then
 	-- string may only contain basic printable characters
-		return false
+		if err ~= false then
+			error("invalid port value",3)
+		end
+		return nil
 	end
-	return true
+	return port
 end
 
 ---- Socket remote data type
@@ -283,9 +282,7 @@ local function createSocket(peer,remote)
 end
 
 function network.Socket(peer,port)
-	if not isPortValue(port) then
-		error("invalid port number",2)
-	end
+	port = assertPortValue(port)
 
 	-- Blocks the thread if it so happens that the recipient peer's network
 	-- library has not yet finished initializing (otherwise it wouldn't detect
@@ -331,7 +328,7 @@ local listeners = {}
 -- Fix: Listener will fail to detect existing remotes if port changes. Allow
 --      modifiable ports?
 MessageTypes[MessageNewRemote] = function(peer,remote,port)
-	if not isPortValue(port) or not remote then
+	if not assertPortValue(port,false) or not remote then
 		return
 	end
 
@@ -352,9 +349,7 @@ MessageTypes[MessageNewRemote] = function(peer,remote,port)
 end
 
 function network.Listener(port,callback)
-	if not isPortValue(port) then
-		error("invalid port number",2)
-	end
+	port = assertPortValue(port)
 
 	local listener = {
 		Port = port or 0;
@@ -377,9 +372,7 @@ function network.Listener(port,callback)
 	end
 
 	function listener:SetPort(port)
-		if not isPortValue(port) then
-			error("invalid port number",2)
-		end
+		port = assertPortValue(port)
 		listener.Port = port
 		checkRemotes()
 	end
