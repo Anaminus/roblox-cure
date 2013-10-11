@@ -38,11 +38,12 @@ Sockets have the following members:
 - `Socket.Recipient`
 
 	A Player object representing the peer the socket is connected to. Will be
-	`nil` if the recipient is the server.
+	`nil` if the recipient is the server, or if the socket is closed.
 
 - `Socket.Remote`
 
-	The underlying remote object the socket is associated with.
+	The underlying remote object the socket is associated with. It is usually
+	not necessary to access this object.
 
 - `Socket.Closed`
 
