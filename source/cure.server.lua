@@ -212,6 +212,7 @@ spawner = {
 	CharacterAutoLoads = true;
 	RespawnCooldown = 5;
 }
+shared.spawner = spawner
 
 local playerAddedListeners = {}
 local playerRemovingListeners = {}
@@ -228,6 +229,7 @@ function PlayerAdded(callback)
 		end;
 	}
 end
+shared.PlayerAdded = PlayerAdded
 
 function PlayerRemoving(callback)
 	table.insert(playerRemovingListeners,callback)
@@ -242,6 +244,7 @@ function PlayerRemoving(callback)
 		end;
 	}
 end
+shared.PlayerRemoving = PlayerRemoving
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
