@@ -150,8 +150,8 @@ Currently, the following extra global variables are defined:
 
 - `cure`
 
-	A reference to the cure container. This global is only available on the
-	server.
+	A reference to the cure container. This global variable is only available
+	on the server.
 
 - `spawner`
 
@@ -169,7 +169,7 @@ Currently, the following extra global variables are defined:
 		The amount of time to wait before respawning after a player's
 		character dies, in seconds. Initially, this value is 5.
 
-	This global is only available on the server.
+	This global variable is only available on the server.
 
 
 ### Run-time Procedure
