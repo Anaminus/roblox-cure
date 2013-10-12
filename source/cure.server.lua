@@ -305,6 +305,7 @@ if CureClient then
 		function clientLoaded()
 			-- end the call stream
 			CallStream:Destroy()
+			local spawner = require('spawner',true)
 			if spawner then
 				spawner.Add(player)
 			end
@@ -316,6 +317,7 @@ if CureClient then
 		CureClient:Clone().Parent = Container
 	end)
 
+	local spawner = require('spawner',true)
 	if spawner then
 		Players.PlayerRemoving:connect(function(player)
 			spawner.Remove(player)
