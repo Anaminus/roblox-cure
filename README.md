@@ -86,13 +86,11 @@ child of ServerScriptService.
 - `global` (Configuration)
 
 	This folder contains packages that are available on both clients and the
-	server. Cure comes with a few of these global packages built-in.
+	server. Packages here are automatically available in script environments.
 
 - `info` (Configuration)
 
-	Contains general information and documentation about the project. By
-	default, this folder contains documentation for the built-in global
-	packages.
+	Contains general information and documentation about the project.
 
 Note that the `global` folder, as well as the `packages` and `scripts` folders
 of each peer, may contain sub-folders. Cure will automatically recurse every
@@ -233,7 +231,7 @@ This procedure requires that the client's Character is not loaded immediately.
 As a consequence, Character spawning cannot be handled internally by Roblox.
 To remedy this, the **spawner** package is available. This recreates the
 original functionality of character spawning, with a few enhancements. If this
-package is included as a global package, then Cure will utilize it
+package is included as a server or global package, then Cure will utilize it
 automatically.
 
 
@@ -258,6 +256,10 @@ your place. A Sublime Text project file is provided to get started.
 - `build`
 
 	Contains the .rbxm file created by `build.lua`.
+
+- `packages`
+
+	Contains premade packages that may be useful.
 
 - `locations.txt`
 
