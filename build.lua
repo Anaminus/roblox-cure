@@ -300,8 +300,6 @@ local function handleFile(path,file,sub)
 			print("WARNING: content of `" .. file .. "` must be a number")
 		end
 		return createValue('Int',name,content)
-	elseif ext == "value" then
-		return createValue('String',name,content)
 	else
 		return {ClassName='Script';
 			Name={'string',name};

@@ -279,8 +279,6 @@ your place. A Sublime Text project file is provided to get started.
 	- `*.localscript.lua`: Converts to a LocalScript source.
 	- `*.asset`: Converts to an IntValue source. The content of the file is
       the asset ID.
-	- `*.value`: Converts to a StringValue instance. The content is some value
-      in Lua format (i.e. true, "string", etc).
 	- `*.*` (anything else): Converts to a disabled Script whose Source is
       commented out.
 	- `.gitignore`: Ignored, so that empty folders may be committed with git.
