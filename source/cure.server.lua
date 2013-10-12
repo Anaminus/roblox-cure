@@ -206,6 +206,17 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+-- Environment
+
+spawner = {
+	CharacterAutoLoads = true;
+	RespawnCooldown = 5;
+}
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Run scripts
 
 do
@@ -264,6 +275,10 @@ if CureClient then
 
 	local Players = Game:GetService('Players')
 	Players.CharacterAutoLoads = false
+
+	-- holds respawner event connections
+	local respawnConns = {}
+
 	Players.PlayerAdded:connect(function(player)
 		local CallStream = Instance.new('RemoteFunction')
 		CallStream.Name = "CallStream"
@@ -305,9 +320,22 @@ if CureClient then
 		function clientLoaded()
 			-- end the call stream
 			CallStream:Destroy()
-			local spawner = require('spawner',true)
-			if spawner then
-				spawner.Add(player)
+
+			-- setup character respawning
+			local function respawn()
+				if not spawner.CharacterAutoLoads then return end
+				wait(spawner.RespawnCooldown)
+				if not spawner.CharacterAutoLoads then return end
+				return player:LoadCharacter()
+			end
+			respawnConns[player] = player.CharacterAdded:connect(function(character)
+				local humanoid = getHumanoid(character)
+				if humanoid then
+					humanoid.Died:connect(respawn)
+				end
+			end)
+			if settings.CharacterAutoLoads then
+				player:LoadCharacter()
 			end
 		end
 
@@ -317,10 +345,11 @@ if CureClient then
 		CureClient:Clone().Parent = Container
 	end)
 
-	local spawner = require('spawner',true)
-	if spawner then
-		Players.PlayerRemoving:connect(function(player)
-			spawner.Remove(player)
-		end)
-	end
+	Players.PlayerRemoving:connect(function(player)
+		-- clear respawn connection
+		if respawnConns[player] then
+			respawnConns[player]:disconnect()
+			respawnConns[player] = nil
+		end
+	end)
 end

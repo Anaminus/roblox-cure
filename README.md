@@ -153,6 +153,24 @@ Currently, the following extra global variables are defined:
 	A reference to the cure container. This global is only available on the
 	server.
 
+- `spawner`
+
+	A table that contains settings to modify the behavior of character
+	respawning. The following settings are available.
+
+	- `CharacterAutoLoads` (bool)
+
+		Reimplements the behavior of Players.CharacterAutoLoads. If this value
+		is false, the player's character will not automatically respawn.
+		Initially, this value is true.
+
+	- `RespawnCooldown` (number)
+
+		The amount of time to wait before respawning after a player's
+		character dies, in seconds. Initially, this value is 5.
+
+	This global is only available on the server.
+
 
 ### Run-time Procedure
 
@@ -229,10 +247,9 @@ The Cure client control script runs the following procedure:
 
 This procedure requires that the client's Character is not loaded immediately.
 As a consequence, Character spawning cannot be handled internally by Roblox.
-To remedy this, the **spawner** package is available. This recreates the
-original functionality of character spawning, with a few enhancements. If this
-package is included as a server or global package, then Cure will utilize it
-automatically.
+To remedy this, Cure recreates the original functionality of character
+spawning, with a few enhancements. Spawning behavior can be controlled by
+settings in the `spawner` global variable.
 
 
 ## External Editing
