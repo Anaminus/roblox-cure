@@ -1,7 +1,3 @@
-if IsClient then
-	return nil
-end
-
 local settings = {
 	CharacterAutoLoads = true;
 	RespawnCooldown = 5;
