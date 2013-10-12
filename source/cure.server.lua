@@ -213,6 +213,36 @@ spawner = {
 	RespawnCooldown = 5;
 }
 
+local playerAddedListeners = {}
+local playerRemovingListeners = {}
+function PlayerAdded(callback)
+	table.insert(playerAddedListeners,callback)
+	return {
+		disconnect = function()
+			for i = 1,#playerAddedListeners do
+				if playerAddedListeners[i] == callback then
+					table.remove(playerAddedListeners,i)
+					break
+				end
+			end
+		end;
+	}
+end
+
+function PlayerRemoving(callback)
+	table.insert(playerRemovingListeners,callback)
+	return {
+		disconnect = function()
+			for i = 1,#playerRemovingListeners do
+				if playerRemovingListeners[i] == callback then
+					table.remove(playerRemovingListeners,i)
+					break
+				end
+			end
+		end;
+	}
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -337,6 +367,11 @@ if CureClient then
 			if settings.CharacterAutoLoads then
 				player:LoadCharacter()
 			end
+
+			-- run player added callbacks
+			for i = 1,#playerAddedListeners do
+				coroutine.wrap(playerAddedListeners[i])(player)
+			end
 		end
 
 		CallStream.Parent = player
@@ -350,6 +385,11 @@ if CureClient then
 		if respawnConns[player] then
 			respawnConns[player]:disconnect()
 			respawnConns[player] = nil
+		end
+
+		-- run player removing callbacks
+		for i = 1,#playerRemovingListeners do
+			coroutine.wrap(playerRemovingListeners[i])(player)
 		end
 	end)
 end
