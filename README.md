@@ -171,6 +171,24 @@ Currently, the following extra global variables are defined:
 
 	This global variable is only available on the server.
 
+- `PlayerAdded ( callback )`
+
+	A function that allows scripts to hook into the Players.PlayerAdded event
+	*after* Cure has finished setting up a client.
+
+	*callback* is a function called when a new player is added. A Player
+	instance is passed as an argument.
+
+	This function returns a table that contains a single function,
+	"disconnect". After disconnect is called, the callback function will no
+	longer be called by PlayerAdded.
+
+	This global variable is only available on the server.
+
+- `PlayerRemoving ( callback )`
+
+	Similar to PlayerAdded, but fires after a player is being removed. This
+	global variable is only available on the server.
 
 ### Run-time Procedure
 
