@@ -97,16 +97,16 @@ of each peer, may contain sub-folders. Cure will automatically recurse every
 folder, looking for sources.
 
 
-### Globals
+### Global Variables
 
 In order for scripts and packages to have access to the standard global
 variables, they piggyback off of the environment of the main control script.
 This doesn't mean they all share the same environment, they just have read-
 only access to it.
 
-Some extra globals are added to the main environment, and are therefore
-accessible to all scripts and packages. For convenience, they are also added
-to the `shared` table, for use by scripts outside of Cure.
+Some extra global variables are added to the main environment, and are
+therefore accessible to all scripts and packages. For convenience, they are
+also added to the `shared` table, for use by scripts outside of Cure.
 
 Global packages are also added to the main environment automatically, under
 the name of the package (sub-folders do not make a difference).
