@@ -179,9 +179,8 @@ Currently, the following extra global variables are defined:
 	*callback* is a function called when a new player is added. A Player
 	instance is passed as an argument.
 
-	This function returns a table that contains a single function,
-	"disconnect". After disconnect is called, the callback function will no
-	longer be called by PlayerAdded.
+	This function returns a "disconnect" function. When it is called, the
+	callback function will no longer be called by PlayerAdded.
 
 	This global variable is only available on the server.
 

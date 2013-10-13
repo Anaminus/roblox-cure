@@ -218,31 +218,27 @@ local playerAddedListeners = {}
 local playerRemovingListeners = {}
 function PlayerAdded(callback)
 	table.insert(playerAddedListeners,callback)
-	return {
-		disconnect = function()
-			for i = 1,#playerAddedListeners do
-				if playerAddedListeners[i] == callback then
-					table.remove(playerAddedListeners,i)
-					break
-				end
+	return function()
+		for i = 1,#playerAddedListeners do
+			if playerAddedListeners[i] == callback then
+				table.remove(playerAddedListeners,i)
+				break
 			end
-		end;
-	}
+		end
+	end
 end
 shared.PlayerAdded = PlayerAdded
 
 function PlayerRemoving(callback)
 	table.insert(playerRemovingListeners,callback)
-	return {
-		disconnect = function()
-			for i = 1,#playerRemovingListeners do
-				if playerRemovingListeners[i] == callback then
-					table.remove(playerRemovingListeners,i)
-					break
-				end
+	return function()
+		for i = 1,#playerRemovingListeners do
+			if playerRemovingListeners[i] == callback then
+				table.remove(playerRemovingListeners,i)
+				break
 			end
-		end;
-	}
+		end
+	end
 end
 shared.PlayerRemoving = PlayerRemoving
 
