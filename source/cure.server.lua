@@ -307,6 +307,15 @@ if CureClient then
 
 	-- holds respawner event connections
 	local respawnConns = {}
+	local function getHumanoid(character)
+		local children = character:GetChildren()
+		for i = 1,#children do
+			if children[i]:IsA'Humanoid' then
+				return children[i]
+			end
+		end
+		return nil
+	end
 
 	Players.PlayerAdded:connect(function(player)
 		local CallStream = Instance.new('RemoteFunction')
@@ -363,7 +372,7 @@ if CureClient then
 					humanoid.Died:connect(respawn)
 				end
 			end)
-			if settings.CharacterAutoLoads then
+			if spawner.CharacterAutoLoads then
 				player:LoadCharacter()
 			end
 
