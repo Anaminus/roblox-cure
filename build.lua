@@ -13,6 +13,10 @@ end
 -- maximum length of strings in replicated instances
 local MAX_STRING_LENGTH = 200000 - 1
 
+function isDir(dir)
+  return lfs.attributes(dir, "mode") == "directory"
+end
+
 local saveRBXM do
   -- because of the way XML is parsed, leading spaces get truncated
   -- so, simply add a "\" when a space or "\" is detected as the first character
@@ -340,7 +344,7 @@ local function recurseDir(path, obj, r)
     if name ~= ".." and name ~= "." and name ~= ".gitignore" then
       local joinedPath = path .. "/" .. name
 
-      if lfs.attributes(joinedPath, "mode") == "directory" then
+      if isDir(joinedPath) then
         obj[#obj+1] = recurseDir(joinedPath, {
           ClassName = "Configuration",
           Name = { "string", name }
