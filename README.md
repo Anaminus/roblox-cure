@@ -295,11 +295,6 @@ your place. A Sublime Text project file is provided to get started.
 
 	Contains premade packages that may be useful.
 
-- `locations.txt`
-
-	Contains a line-separated list of alternative paths to output the contents
-	of the .rbxm file to.
-
 - `build.lua`
 
 	Compiles everything in the `source` folder into a .rbxm file. All files

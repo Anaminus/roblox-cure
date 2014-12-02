@@ -1,5 +1,11 @@
 local lfs = require 'lfs'
 
+-- Array of alternative paths to output the contents of the model.
+local locations = {
+  -- "output.rbxmx",
+  -- "test/game.rbxmx"
+}
+
 if _VERSION == 'Lua 5.2' then
 	unpack = table.unpack
 end
@@ -328,13 +334,6 @@ end
 local rbxmObj = recurseDir("source",{ClassName='Configuration', Name={'string',"cure"}})
 saveRBXM(rbxmObj,"build/" .. ((...) or "cure.rbxm"))
 
-local f = io.open("locations.txt")
-if f then
-	local outputs = f:read('*a')
-	f:close()
-
-	for path in outputs:gmatch('[^\r\n]+') do
-		saveRBXM(rbxmObj,path)
-		print("wrote to",path)
-	end
+for i,v in ipairs(locations) do
+  saveRBXM(rbxmObj, locations[i])
 end
