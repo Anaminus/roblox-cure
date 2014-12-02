@@ -239,7 +239,7 @@ end
 local rbxm = {}
 
 -- Converts a RBXM table to a string.
-function rbxm.tabToStr(var)
+function rbxm:tabToStr(var)
   if type(var) ~= "table" then
     error("table expected",2)
   end
@@ -309,9 +309,9 @@ function rbxm.tabToStr(var)
 end
 
 -- Saves an RBXM string or table.
-function rbxm.save(var, filename)
+function rbxm:save(var, filename)
   if type(var) == "table" then
-    var = rbxm.tabToStr(var)
+    var = self:tabToStr(var)
   end
   if type(var) == "string" then
     local file = assert(io.open(filename, "w"))
@@ -435,8 +435,8 @@ local rbxmObj = recurseDir("source", {
   Name = { "string", "cure" }
 })
 
-rbxm.save(rbxmObj, OUTPUT_DIR..((...) or OUTPUT_FILE))
+rbxm:save(rbxmObj, OUTPUT_DIR..((...) or OUTPUT_FILE))
 
 for i,v in ipairs(locations) do
-  rbxm.save(rbxmObj, locations[i])
+  rbxm:save(rbxmObj, locations[i])
 end
