@@ -1,4 +1,4 @@
-local lfs = require 'lfs'
+local lfs = require "lfs"
 
 -- Array of alternative paths to output the contents of the model.
 local locations = {
@@ -6,7 +6,7 @@ local locations = {
   -- "test/game.rbxmx"
 }
 
-if _VERSION == 'Lua 5.2' then
+if _VERSION == "Lua 5.2" then
 	unpack = table.unpack
 end
 
@@ -19,7 +19,7 @@ local saveRBXM do
 	-- this will be decoded automatically by Cure
 	local function encodeTruncEsc(str)
 		local first = str:sub(1,1)
-		if first:match('%s') or first == [[\]] then
+		if first:match("%s") or first == [[\]] then
 			return [[\]] .. str
 		end
 		return str
@@ -27,7 +27,7 @@ local saveRBXM do
 
 	local function escapeToXML(str)
 		local nameEsc = {
-			['"'] = "quot";
+			["\""] = "quot";
 			["&"] = "amp";
 			["'"] = "apos";
 			["<"] = "lt";
@@ -47,13 +47,13 @@ local saveRBXM do
 	end
 
 	local encodeDataType = {
-		['string'] = function(data)
+		["string"] = function(data)
 			return encodeTruncEsc(escapeToXML(data))
 		end;
-		['ProtectedString'] = function(data)
+		["ProtectedString"] = function(data)
 			return encodeTruncEsc(escapeToXML(data))
 		end;
-		['CoordinateFrame'] = function(data,tab)
+		["CoordinateFrame"] = function(data,tab)
 			local d = {data:components()}
 			return {
 				"\n",tab( 1),[[<X>]],d[1],[[</X>]];
@@ -71,17 +71,17 @@ local saveRBXM do
 				"\n",tab(-1);
 			}
 		end;
-		['Color3'] = function(data)
+		["Color3"] = function(data)
 			return tonumber(string.format("0xFF%02X%02X%02X",data.r*255,data.g*255,data.b*255))
 		end;
-		['Content'] = function(data)
+		["Content"] = function(data)
 			if #data == 0 then
 				return [[<null></null>]]
 			else
 				return {[[<url>]],data,[[</url>]]}
 			end
 		end;
-		['Ray'] = function(data,tab)
+		["Ray"] = function(data,tab)
 			local o = data.Origin
 			local d = data.Direction
 			return {
@@ -98,7 +98,7 @@ local saveRBXM do
 				"\n";tab(-1);
 			}
 		end;
-		['Vector3'] = function(data,tab)
+		["Vector3"] = function(data,tab)
 			return {
 				"\n",tab( 1),[[<X>]],data.x,[[</X>]];
 				"\n",tab(  ),[[<Y>]],data.y,[[</Y>]];
@@ -106,14 +106,14 @@ local saveRBXM do
 				"\n";tab(-1);
 			}
 		end;
-		['Vector2'] = function(data,tab)
+		["Vector2"] = function(data,tab)
 			return {
 				"\n",tab( 1),[[<X>]],data.x,[[</X>]];
 				"\n",tab( 0),[[<Y>]],data.y,[[</Y>]];
 				"\n";tab(-1);
 			}
 		end;
-		['UDim2'] = function(data,tab)
+		["UDim2"] = function(data,tab)
 			return {
 				"\n",tab( 1),[[<XS>]],data.X.Scale,[[</XS>]];
 				"\n",tab(  ),[[<XO>]],data.X.Offset,[[</XO>]];
@@ -122,27 +122,27 @@ local saveRBXM do
 				"\n";tab(-1);
 			}
 		end;
-		['Ref'] = function(data)
+		["Ref"] = function(data)
 			if data == nil then
 				return "null"
 			else
 				return data
 			end
 		end;
-		['double'] = function(data)
+		["double"] = function(data)
 			return string.format("%f",data)
 		end;
-		['int'] = function(data)
+		["int"] = function(data)
 			return string.format("%i",data)
 		end;
-		['bool'] = function(data)
+		["bool"] = function(data)
 			return not not data
 		end;
 	}
 
 	-- Converts a RBXM table to a string.
 	local function strRBXM(var)
-		if type(var) ~= 'table' then
+		if type(var) ~= "table" then
 			error("table expected",2)
 		end
 
@@ -150,7 +150,7 @@ local saveRBXM do
 		local function output(...)
 			local args = {...}
 			for i = 1,#args do
-				if type(args[i]) == 'table' then
+				if type(args[i]) == "table" then
 					output(unpack(args[i]))
 				else
 					contentString[#contentString+1] = tostring(args[i])
@@ -173,7 +173,7 @@ local saveRBXM do
 
 			local sorted = {}
 			for k in pairs(object) do
-				if type(k) == 'string' and k ~= "ClassName" then
+				if type(k) == "string" and k ~= "ClassName" then
 					sorted[#sorted+1] = k
 				end
 			end
@@ -212,11 +212,11 @@ local saveRBXM do
 
 	-- Saves a RBXM string or table.
 	function saveRBXM(var,filename)
-		if type(var) == 'table' then
+		if type(var) == "table" then
 			var = strRBXM(var)
 		end
-		if type(var) == 'string' then
-			local file = assert(io.open(filename,'w'))
+		if type(var) == "string" then
+			local file = assert(io.open(filename,"w"))
 			file:write(var)
 			file:flush()
 			file:close()
@@ -237,35 +237,35 @@ local function splitName(path)
 end
 
 local function createValue(type,name,value)
-	return {ClassName=type .. 'Value', Name={'string',name}, Value={type:lower(),value}}
+	return {ClassName=type .. "Value", Name={"string",name}, Value={type:lower(),value}}
 end
 
 local function checkSyntax(source)
 	-- If it's a script, you want to make sure it can compile!
-	local f, e = loadstring(source,'')
+	local f, e = loadstring(source, "")
 	if not f then
-		print("WARNING: " .. e:gsub('^%[.-%]:',"line "))
+		print("WARNING: " .. e:gsub("^%[.-%]:","line "))
 	end
 end
 
 local function handleFile(path,file,sub)
 	local content do
 		local f = assert(io.open(path))
-		content = f:read('*a')
+		content = f:read("*a")
 		f:close()
 	end
 
 	if not sub and file:lower() == "cure.server.lua" then
 		checkSyntax(content)
-		return {ClassName='Script';
-			Name={'string',"cure.server"};
-			Source={'ProtectedString',content};
+		return {ClassName="Script";
+			Name={"string","cure.server"};
+			Source={"ProtectedString",content};
 		}
 	elseif not sub and file:lower() == "cure.client.lua" then
 		checkSyntax(content)
-		return {ClassName='LocalScript';
-			Name={'string',"cure.client"};
-			Source={'ProtectedString',content};
+		return {ClassName="LocalScript";
+			Name={"string","cure.client"};
+			Source={"ProtectedString",content};
 		}
 	end
 
@@ -275,27 +275,27 @@ local function handleFile(path,file,sub)
 		checkSyntax(content)
 		local subname,subext = splitName(name)
 		if subext:lower() == "script" then
-			return {ClassName='Script';
-				Name={'string',subname};
-				Source={'ProtectedString',content};
+			return {ClassName="Script";
+				Name={"string",subname};
+				Source={"ProtectedString",content};
 			}
 		elseif subext:lower() == "localscript" then
-			return {ClassName='LocalScript';
-				Name={'string',subname};
-				Source={'ProtectedString',content};
+			return {ClassName="LocalScript";
+				Name={"string",subname};
+				Source={"ProtectedString",content};
 			}
 		else
 			local chunk = MAX_STRING_LENGTH
 			local length = #content
 			if length <= chunk then
-				return createValue('String',name,content)
+				return createValue("String",name,content)
 			else
-				local value = createValue('Bool',name,true)
+				local value = createValue("Bool",name,true)
 				for i = 1,math.ceil(length/chunk) do
 					local a = (i - 1)*chunk + 1
 					local b = a + chunk - 1
 					b = b > length and length or b
-					value[i] = createValue('String',tostring(i),content:sub(a,b))
+					value[i] = createValue("String",tostring(i),content:sub(a,b))
 				end
 				return value
 			end
@@ -305,12 +305,12 @@ local function handleFile(path,file,sub)
 		if not content then
 			print("WARNING: content of `" .. file .. "` must be a number")
 		end
-		return createValue('Int',name,content)
+		return createValue("Int",name,content)
 	else
-		return {ClassName='Script';
-			Name={'string',name};
-			Disabled={'bool',true};
-			Source={'ProtectedString',"--[==[\n" .. content .. "\n--]==]"};
+		return {ClassName="Script";
+			Name={"string",name};
+			Disabled={"bool",true};
+			Source={"ProtectedString","--[==[\n" .. content .. "\n--]==]"};
 		}
 	end
 end
@@ -320,8 +320,8 @@ local function recurseDir(path,obj,r)
 	for name in lfs.dir(path) do
 		if name ~= ".." and name ~= "." and name ~= ".gitignore" then
 			local p = path .. "/" .. name
-			if lfs.attributes(p,'mode') == 'directory' then
-				obj[#obj+1] = recurseDir(p,{ClassName='Configuration', Name={'string',name}},true)
+			if lfs.attributes(p,"mode") == "directory" then
+				obj[#obj+1] = recurseDir(p,{ClassName="Configuration", Name={"string",name}},true)
 			else
 				print("FILE",p)
 				obj[#obj+1] = handleFile(p,name,r)
@@ -331,7 +331,7 @@ local function recurseDir(path,obj,r)
 	return obj
 end
 
-local rbxmObj = recurseDir("source",{ClassName='Configuration', Name={'string',"cure"}})
+local rbxmObj = recurseDir("source",{ClassName="Configuration", Name={"string","cure"}})
 saveRBXM(rbxmObj,"build/" .. ((...) or "cure.rbxm"))
 
 for i,v in ipairs(locations) do
