@@ -10,6 +10,9 @@ if _VERSION == "Lua 5.2" then
   unpack = table.unpack
 end
 
+-- Where source code is stored
+local SOURCE_DIR = "source"
+
 --[[
   [1] Where the output file will be generated.
   [2] Name of the file. Placed inside of the OUTPUT_DIR when compiled.
@@ -430,7 +433,7 @@ local function recurseDir(path, obj, r)
   return obj
 end
 
-local rbxmObj = recurseDir("source", {
+local rbxmObj = recurseDir(SOURCE_DIR, {
   ClassName = CONTAINER_CLASS,
   Name = { "string", "cure" }
 })
