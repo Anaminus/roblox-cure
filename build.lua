@@ -10,6 +10,19 @@ if _VERSION == "Lua 5.2" then
   unpack = table.unpack
 end
 
+--[[
+  [1] Where the output file will be generated.
+  [2] Name of the file. Placed inside of the OUTPUT_DIR when compiled.
+      Eg. "build/cure.rbxm".
+  [3] Roblox only supports two extensions: rbxm and rbxmx. The former uses
+      binary while the former uses XML. Because this build only compiles to
+      XML, the rbxmx file extension is recommended.
+--]]
+local OUTPUT_DIR  = "build/" --[1]
+local OUTPUT_NAME = "cure" -- [2]
+local OUTPUT_EXT  = ".rbxmx" -- [3]
+local OUTPUT_FILE = OUTPUT_NAME..OUTPUT_EXT
+
 -- maximum length of strings in replicated instances
 local MAX_STRING_LENGTH = 200000 - 1
 
@@ -364,7 +377,7 @@ local rbxmObj = recurseDir("source", {
   Name = { "string", "cure" }
 })
 
-saveRBXM(rbxmObj, "build/"..((...) or "cure.rbxm"))
+saveRBXM(rbxmObj, OUTPUT_DIR..((...) or OUTPUT_FILE))
 
 for i,v in ipairs(locations) do
   saveRBXM(rbxmObj, locations[i])
