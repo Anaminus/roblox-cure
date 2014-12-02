@@ -244,7 +244,7 @@ local function createValue(className, name, value)
   }
 end
 
-local function checkSyntax(source)
+local function checkScriptSyntax(source)
   -- If it's a script, you want to make sure it can compile!
   local func, err = loadstring(source, "")
   if not func then
@@ -260,7 +260,7 @@ local function handleFile(path, file, sub)
   end
 
   if not sub and file:lower() == "cure.server.lua" then
-    checkSyntax(content)
+    checkScriptSyntax(content)
 
     return {
       ClassName = "Script";
@@ -268,7 +268,7 @@ local function handleFile(path, file, sub)
       Source = { "ProtectedString", content};
     }
   elseif not sub and file:lower() == "cure.client.lua" then
-    checkSyntax(content)
+    checkScriptSyntax(content)
 
     return {
       ClassName = "LocalScript";
@@ -281,7 +281,7 @@ local function handleFile(path, file, sub)
   ext = ext:lower()
 
   if ext == "lua" then
-    checkSyntax(content)
+    checkScriptSyntax(content)
     local subname, subext = splitName(name)
 
     if subext:lower() == "script" then
