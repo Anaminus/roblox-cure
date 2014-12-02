@@ -40,71 +40,71 @@ local getSourceFromInstance
 
 -- retrieve a source from an external roblox asset
 local function getSourceFromAsset(id,doerr,e)
-	local model = Game:GetService('InsertService'):LoadAsset(id)
+  local model = Game:GetService('InsertService'):LoadAsset(id)
 
-	if not model then
-		(doerr and error or print)("could not load asset from ID `" .. id .. "`",e and e+1 or 2)
-		return nil
-	end
+  if not model then
+    (doerr and error or print)("could not load asset from ID `" .. id .. "`",e and e+1 or 2)
+    return nil
+  end
 
-	return getSourceFromInstance(model:GetChildren()[1],doerr,e and e+1 or 2)
+  return getSourceFromInstance(model:GetChildren()[1],doerr,e and e+1 or 2)
 end
 
 -- because of the way XML is parsed, leading spaces get truncated
 -- so, simply add a "\" when a space or "\" is detected as the first character
 local function encodeTruncEsc(str)
-	local first = str:sub(1,1)
-	if first:match('%s') or first == [[\]] then
-		return [[\]] .. str
-	end
-	return str
+  local first = str:sub(1,1)
+  if first:match('%s') or first == [[\]] then
+    return [[\]] .. str
+  end
+  return str
 end
 
 local function decodeTruncEsc(str)
-	local first = str:sub(1,1)
-	if first == [[\]] then
-		return str:sub(2)
-	end
-	return str
+  local first = str:sub(1,1)
+  if first == [[\]] then
+    return str:sub(2)
+  end
+  return str
 end
 
 -- retrieve a source from an instance
 function getSourceFromInstance(object,doerr,e)
-	local source = nil
-	if object:IsA'StringValue' then
-		-- take the source from the value
-		source = decodeTruncEsc(object.Value)
-	elseif object:IsA'BoolValue' then
-		-- multi-part object; take source from child StringValues
-		local value = ""
-		for i,part in pairs(object:GetChildren()) do
-			if part:IsA'StringValue' then
-				value = value .. decodeTruncEsc(part.Value)
-			end
-		end
-		source = value
-	elseif object:IsA'IntValue' then
-		-- take source from external asset
-		source = getSourceFromAsset(decodeTruncEsc(object.Value),doerr,e and e+1 or 2)
-	end
-	return source
+  local source = nil
+  if object:IsA'StringValue' then
+    -- take the source from the value
+    source = decodeTruncEsc(object.Value)
+  elseif object:IsA'BoolValue' then
+    -- multi-part object; take source from child StringValues
+    local value = ""
+    for i,part in pairs(object:GetChildren()) do
+      if part:IsA'StringValue' then
+        value = value .. decodeTruncEsc(part.Value)
+      end
+    end
+    source = value
+  elseif object:IsA'IntValue' then
+    -- take source from external asset
+    source = getSourceFromAsset(decodeTruncEsc(object.Value),doerr,e and e+1 or 2)
+  end
+  return source
 end
 
 -- run a source as lua
 local runSource do
-	local env = getfenv()
-	function runSource(name,source,doerr,e)
-		local run,err = loadstring(source,name)
+  local env = getfenv()
+  function runSource(name,source,doerr,e)
+    local run,err = loadstring(source,name)
 
-		if not run then
-			(doerr and error or print)(err,e and e+1 or 2)
-			return nil
-		end
+    if not run then
+      (doerr and error or print)(err,e and e+1 or 2)
+      return nil
+    end
 
-		-- the function's env will piggyback off of this script's env to access globals
-		setfenv(run,setmetatable({},{__index=env,__metatable="The metatable is locked"}))
-		return run()
-	end
+    -- the function's env will piggyback off of this script's env to access globals
+    setfenv(run,setmetatable({},{__index=env,__metatable="The metatable is locked"}))
+    return run()
+  end
 end
 
 
@@ -115,91 +115,91 @@ end
 -- require
 
 do
-	local packageSource = {}
-	local packageData = {}
+  local packageSource = {}
+  local packageData = {}
 
-	-- retrieve package sources
-	do
-		local function r(object,preName)
-			local children = object:GetChildren()
-			for i = 1,#children do
-				local longName = preName .. decodeTruncEsc(children[i].Name)
-				local source = getSourceFromInstance(children[i],false)
-				if source then
-					packageSource[longName] = source
-				else
-					-- only recurse non-source objects
-					r(children[i],longName .. ".")
-				end
-			end
-		end
+  -- retrieve package sources
+  do
+    local function r(object,preName)
+      local children = object:GetChildren()
+      for i = 1,#children do
+        local longName = preName .. decodeTruncEsc(children[i].Name)
+        local source = getSourceFromInstance(children[i],false)
+        if source then
+          packageSource[longName] = source
+        else
+          -- only recurse non-source objects
+          r(children[i],longName .. ".")
+        end
+      end
+    end
 
-		r(Packages,"")
-	end
+    r(Packages,"")
+  end
 
-	function require(name,fetch)
-		name = tostring(name)
+  function require(name,fetch)
+    name = tostring(name)
 
-		if packageData[name] then
-			return packageData[name]
-		end
+    if packageData[name] then
+      return packageData[name]
+    end
 
-		local source = packageSource[name]
-		if not source then
-			if fetch then
-				return
-			else
-				error("`" .. name .. "` is not an existing package",2)
-			end
-		end
+    local source = packageSource[name]
+    if not source then
+      if fetch then
+        return
+      else
+        error("`" .. name .. "` is not an existing package",2)
+      end
+    end
 
-		local result = runSource(name,source,true,2)
-		result = result == nil and true or result
-		packageData[name] = result
-		return result
-	end
+    local result = runSource(name,source,true,2)
+    result = result == nil and true or result
+    packageData[name] = result
+    return result
+  end
 
-	shared.require = require
+  shared.require = require
 
 ---- Global packages
 
-	local globalPackages = {}
+  local globalPackages = {}
 
-	-- retrieve global sources
-	local clientGlobal = {}
-	clientData.global = clientGlobal
+  -- retrieve global sources
+  local clientGlobal = {}
+  clientData.global = clientGlobal
 
-	local n = 0
-	local function r(object,preName)
-		local children = object:GetChildren()
-		for i = 1,#children do
-			local shortName = decodeTruncEsc(children[i].Name)
-			local longName = preName .. shortName
-			local source = getSourceFromInstance(children[i],false)
-			if source then
-				n = n + 1
-				packageSource[longName] = source
-				globalPackages[n] = {longName,shortName}
-				clientGlobal[n] = {longName,shortName,source}
-			else
-				-- only recurse non-source objects
-				r(children[i],longName .. ".")
-			end
-		end
-	end
+  local n = 0
+  local function r(object,preName)
+    local children = object:GetChildren()
+    for i = 1,#children do
+      local shortName = decodeTruncEsc(children[i].Name)
+      local longName = preName .. shortName
+      local source = getSourceFromInstance(children[i],false)
+      if source then
+        n = n + 1
+        packageSource[longName] = source
+        globalPackages[n] = {longName,shortName}
+        clientGlobal[n] = {longName,shortName,source}
+      else
+        -- only recurse non-source objects
+        r(children[i],longName .. ".")
+      end
+    end
+  end
 
-	r(Global,"")
+  r(Global,"")
 
-	-- require global packages
-	local env = getfenv()
-	for i = 1,#globalPackages do
-		local long = globalPackages[i][1]
-		local short = globalPackages[i][2]
-		-- FIX: top-level `require` in lower-level area
-		local result = require(long)
-		env[short] = result
-		shared[short] = result
-	end
+  -- require global packages
+  local env = getfenv()
+  for i = 1,#globalPackages do
+    local long = globalPackages[i][1]
+    local short = globalPackages[i][2]
+    -- FIX: top-level `require` in lower-level area
+    local result = require(long)
+    env[short] = result
+    shared[short] = result
+  end
 end
 
 --------------------------------------------------------------------------------
@@ -209,36 +209,36 @@ end
 -- Environment
 
 spawner = {
-	CharacterAutoLoads = true;
-	RespawnCooldown = 5;
+  CharacterAutoLoads = true;
+  RespawnCooldown = 5;
 }
 shared.spawner = spawner
 
 local playerAddedListeners = {}
 local playerRemovingListeners = {}
 function PlayerAdded(callback)
-	table.insert(playerAddedListeners,callback)
-	return function()
-		for i = 1,#playerAddedListeners do
-			if playerAddedListeners[i] == callback then
-				table.remove(playerAddedListeners,i)
-				break
-			end
-		end
-	end
+  table.insert(playerAddedListeners,callback)
+  return function()
+    for i = 1,#playerAddedListeners do
+      if playerAddedListeners[i] == callback then
+        table.remove(playerAddedListeners,i)
+        break
+      end
+    end
+  end
 end
 shared.PlayerAdded = PlayerAdded
 
 function PlayerRemoving(callback)
-	table.insert(playerRemovingListeners,callback)
-	return function()
-		for i = 1,#playerRemovingListeners do
-			if playerRemovingListeners[i] == callback then
-				table.remove(playerRemovingListeners,i)
-				break
-			end
-		end
-	end
+  table.insert(playerRemovingListeners,callback)
+  return function()
+    for i = 1,#playerRemovingListeners do
+      if playerRemovingListeners[i] == callback then
+        table.remove(playerRemovingListeners,i)
+        break
+      end
+    end
+  end
 end
 shared.PlayerRemoving = PlayerRemoving
 
@@ -249,21 +249,21 @@ shared.PlayerRemoving = PlayerRemoving
 -- Run scripts
 
 do
-	local function r(object,preName)
-		local children = object:GetChildren()
-		for i = 1,#children do
-			local longName = preName .. decodeTruncEsc(children[i].Name)
-			local source = getSourceFromInstance(children[i],false)
-			if source then
-				coroutine.wrap(runSource)(longName,source,false)
-			else
-				-- only recurse non-source objects
-				r(children[i],longName .. ".")
-			end
-		end
-	end
+  local function r(object,preName)
+    local children = object:GetChildren()
+    for i = 1,#children do
+      local longName = preName .. decodeTruncEsc(children[i].Name)
+      local source = getSourceFromInstance(children[i],false)
+      if source then
+        coroutine.wrap(runSource)(longName,source,false)
+      else
+        -- only recurse non-source objects
+        r(children[i],longName .. ".")
+      end
+    end
+  end
 
-	r(Scripts,"")
+  r(Scripts,"")
 end
 
 --------------------------------------------------------------------------------
@@ -274,130 +274,130 @@ end
 
 local CureClient = cure:FindFirstChild("cure.client")
 if CureClient then
-	-- setup client data
-	do
-		local n
-		local function r(t,object,fullName)
-			local children = object:GetChildren()
-			for i = 1,#children do
-				local short = decodeTruncEsc(children[i].Name)
-				local name = fullName .. short
-				local source = getSourceFromInstance(children[i],false)
-				if source then
-					n = n + 1
-					t[n] = {name,short,source}
-				else
-					-- only recurse non-source objects
-					r(t,children[i],name .. ".")
-				end
-			end
-		end
+  -- setup client data
+  do
+    local n
+    local function r(t,object,fullName)
+      local children = object:GetChildren()
+      for i = 1,#children do
+        local short = decodeTruncEsc(children[i].Name)
+        local name = fullName .. short
+        local source = getSourceFromInstance(children[i],false)
+        if source then
+          n = n + 1
+          t[n] = {name,short,source}
+        else
+          -- only recurse non-source objects
+          r(t,children[i],name .. ".")
+        end
+      end
+    end
 
-		clientData.package = {}
-		clientData.script = {}
+    clientData.package = {}
+    clientData.script = {}
 
-		n = 0
-		r(clientData.package,ClientPackages,"")
-		n = 0
-		r(clientData.script,ClientScripts,"")
-	end
+    n = 0
+    r(clientData.package,ClientPackages,"")
+    n = 0
+    r(clientData.script,ClientScripts,"")
+  end
 
-	local Players = Game:GetService('Players')
-	Players.CharacterAutoLoads = false
+  local Players = Game:GetService('Players')
+  Players.CharacterAutoLoads = false
 
-	-- holds respawner event connections
-	local respawnConns = {}
-	local function getHumanoid(character)
-		local children = character:GetChildren()
-		for i = 1,#children do
-			if children[i]:IsA'Humanoid' then
-				return children[i]
-			end
-		end
-		return nil
-	end
+  -- holds respawner event connections
+  local respawnConns = {}
+  local function getHumanoid(character)
+    local children = character:GetChildren()
+    for i = 1,#children do
+      if children[i]:IsA'Humanoid' then
+        return children[i]
+      end
+    end
+    return nil
+  end
 
-	Players.PlayerAdded:connect(function(player)
-		local CallStream = Instance.new('RemoteFunction')
-		CallStream.Name = "CallStream"
-		local clientLoaded
-		function CallStream.OnServerInvoke(peer,func,arg1,arg2)
-			if peer ~= player then
-				return false,"invalid peer"
-			end
+  Players.PlayerAdded:connect(function(player)
+    local CallStream = Instance.new('RemoteFunction')
+    CallStream.Name = "CallStream"
+    local clientLoaded
+    function CallStream.OnServerInvoke(peer,func,arg1,arg2)
+      if peer ~= player then
+        return false,"invalid peer"
+      end
 
-			if func == 'initialized' then
-			-- client has initialized; return client source info
-				return {
-					{'package',#clientData.package};
-					{'global',#clientData.global};
-					{'script',#clientData.script};
-				}
-			elseif func == 'source' then
-			-- serve a client source
-				local long = clientData[arg1][arg2][1]
-				local short = clientData[arg1][arg2][2]
-				local source = clientData[arg1][arg2][3]
+      if func == 'initialized' then
+      -- client has initialized; return client source info
+        return {
+          {'package',#clientData.package};
+          {'global',#clientData.global};
+          {'script',#clientData.script};
+        }
+      elseif func == 'source' then
+      -- serve a client source
+        local long = clientData[arg1][arg2][1]
+        local short = clientData[arg1][arg2][2]
+        local source = clientData[arg1][arg2][3]
 
-				-- divide source into chunks to avoid exceeding max length
-				local div = {}
-				local max = MAX_STRING_LENGTH
-				for i = 0,math.floor(#source/max) do
-					local n = i*max
-					div[i+1] = source:sub(n+1, n+max)
-				end
-				return long,short,unpack(div)
-			elseif func == 'loaded' then
-			-- client has finished loading
-				Spawn(clientLoaded)
-			else
-				return false,"invalid call"
-			end
-		end
+        -- divide source into chunks to avoid exceeding max length
+        local div = {}
+        local max = MAX_STRING_LENGTH
+        for i = 0,math.floor(#source/max) do
+          local n = i*max
+          div[i+1] = source:sub(n+1, n+max)
+        end
+        return long,short,unpack(div)
+      elseif func == 'loaded' then
+      -- client has finished loading
+        Spawn(clientLoaded)
+      else
+        return false,"invalid call"
+      end
+    end
 
-		function clientLoaded()
-			-- end the call stream
-			CallStream:Destroy()
+    function clientLoaded()
+      -- end the call stream
+      CallStream:Destroy()
 
-			-- setup character respawning
-			local function respawn()
-				if not spawner.CharacterAutoLoads then return end
-				wait(spawner.RespawnCooldown)
-				if not spawner.CharacterAutoLoads then return end
-				return player:LoadCharacter()
-			end
-			respawnConns[player] = player.CharacterAdded:connect(function(character)
-				local humanoid = getHumanoid(character)
-				if humanoid then
-					humanoid.Died:connect(respawn)
-				end
-			end)
-			if spawner.CharacterAutoLoads then
-				player:LoadCharacter()
-			end
+      -- setup character respawning
+      local function respawn()
+        if not spawner.CharacterAutoLoads then return end
+        wait(spawner.RespawnCooldown)
+        if not spawner.CharacterAutoLoads then return end
+        return player:LoadCharacter()
+      end
+      respawnConns[player] = player.CharacterAdded:connect(function(character)
+        local humanoid = getHumanoid(character)
+        if humanoid then
+          humanoid.Died:connect(respawn)
+        end
+      end)
+      if spawner.CharacterAutoLoads then
+        player:LoadCharacter()
+      end
 
-			-- run player added callbacks
-			for i = 1,#playerAddedListeners do
-				coroutine.wrap(playerAddedListeners[i])(player)
-			end
-		end
+      -- run player added callbacks
+      for i = 1,#playerAddedListeners do
+        coroutine.wrap(playerAddedListeners[i])(player)
+      end
+    end
 
-		CallStream.Parent = player
+    CallStream.Parent = player
 
-		local Container = Instance.new('Backpack',player)
-		CureClient:Clone().Parent = Container
-	end)
+    local Container = Instance.new('Backpack',player)
+    CureClient:Clone().Parent = Container
+  end)
 
-	Players.PlayerRemoving:connect(function(player)
-		-- clear respawn connection
-		if respawnConns[player] then
-			respawnConns[player]:disconnect()
-			respawnConns[player] = nil
-		end
+  Players.PlayerRemoving:connect(function(player)
+    -- clear respawn connection
+    if respawnConns[player] then
+      respawnConns[player]:disconnect()
+      respawnConns[player] = nil
+    end
 
-		-- run player removing callbacks
-		for i = 1,#playerRemovingListeners do
-			coroutine.wrap(playerRemovingListeners[i])(player)
-		end
-	end)
+    -- run player removing callbacks
+    for i = 1,#playerRemovingListeners do
+      coroutine.wrap(playerRemovingListeners[i])(player)
+    end
+  end)
 end
