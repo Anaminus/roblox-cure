@@ -30,8 +30,43 @@ local CONTAINER_CLASS = "Folder"
 -- maximum length of strings in replicated instances
 local MAX_STRING_LENGTH = 200000 - 1
 
+
+
+
+
+--[[
+  Helpers
+  ==============================================================================
+--]]
+
 function isDir(dir)
   return lfs.attributes(dir, "mode") == "directory"
+end
+
+local function splitName(path)
+  for i = #path, 1, -1 do
+    local c = path:sub(i, i)
+    if c == "." then
+      return path:sub(1, i-1), path:sub(i+1, #path)
+    end
+  end
+  return path, ""
+end
+
+local function createValue(className, name, value)
+  return {
+    ClassName = className .. "Value",
+    Name = { "string", name },
+    Value = { className:lower(), value }
+  }
+end
+
+local function checkScriptSyntax(source)
+  -- If it's a script, you want to make sure it can compile!
+  local func, err = loadstring(source, "")
+  if not func then
+    print("WARNING: " .. err:gsub("^%[.-%]:", "line "))
+  end
 end
 
 
@@ -291,32 +326,6 @@ end
 
 
 
-
-local function splitName(path)
-  for i = #path, 1, -1 do
-    local c = path:sub(i, i)
-    if c == "." then
-      return path:sub(1, i-1), path:sub(i+1, #path)
-    end
-  end
-  return path, ""
-end
-
-local function createValue(className, name, value)
-  return {
-    ClassName = className .. "Value",
-    Name = { "string", name },
-    Value = { className:lower(), value }
-  }
-end
-
-local function checkScriptSyntax(source)
-  -- If it's a script, you want to make sure it can compile!
-  local func, err = loadstring(source, "")
-  if not func then
-    print("WARNING: " .. err:gsub("^%[.-%]:", "line "))
-  end
-end
 
 local function handleFile(path, file, sub)
   local content do
