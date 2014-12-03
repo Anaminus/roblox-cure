@@ -487,7 +487,7 @@ function compile(args)
     Name = { "string", "cure" }
   })
 
-  local rbxmPath = BUILD_DIR.."/"..(unpack(args) or RBXM_FILE)
+  local rbxmPath = BUILD_DIR.."/"..(args[1] or RBXM_FILE)
 
   -- Make sure the output directory exists
   lfs.mkdir(BUILD_DIR)
