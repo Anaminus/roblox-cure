@@ -249,13 +249,13 @@ end
 -- Converts a RBXM table to a string.
 function rbxm:tabToStr(var)
   if type(var) ~= "table" then
-    error("table expected",2)
+    error("table expected", 2)
   end
 
   local contentString = {}
   local function output(...)
     local args = {...}
-    for i = 1,#args do
+    for i = 1, #args do
       if type(args[i]) == "table" then
         output(unpack(args[i]))
       else
