@@ -340,7 +340,9 @@ end
     - 3
     - etc.
 --]]
-function rbxm:splitFileParts(length, chunk, content)
+function rbxm:splitFileParts(content)
+  local chunk = MAX_STRING_LENGTH
+  local length = #content
   local container = rbxm:createValue("Bool", name, true)
 
   for i = 1, math.ceil(length/chunk) do
@@ -522,7 +524,7 @@ local function handleFile(path, file, subfolder)
         return rbxm:createValue("String", name, content)
       else
         -- If the file is too big, split it into multiple parts
-        return rbxm:splitFileParts(length, chunk, content)
+        return rbxm:splitFileParts(content)
       end
     end
   elseif ext == "asset" then
