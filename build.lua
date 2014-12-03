@@ -15,21 +15,20 @@ local locations = {
 -- constant.
 local args = {...}
 
--- Where source code is stored
+-- Where source code is stored and compiled to
 local SOURCE_DIR = "source"
+local BUILD_DIR  = "build/"
 
 --[[
-  [1] Where the output file will be generated.
-  [2] Name of the file. Placed inside of the OUTPUT_DIR when compiled.
-      Eg. "build/cure.rbxm".
-  [3] Roblox only supports two extensions: rbxm and rbxmx. The former uses
-      binary while the former uses XML. Because this build only compiles to
-      XML, the rbxmx file extension is recommended.
+  The name and extension of the Model file that will be generated.
+
+  [1] Roblox only supports two extensions: rbxm and rbxmx. The former uses
+      binary while the latter uses XML. Because this build only compiles to
+      XML, the rbxmx file extension is prefered.
 --]]
-local OUTPUT_DIR  = "build/" --[1]
-local OUTPUT_NAME = "cure" -- [2]
-local OUTPUT_EXT  = ".rbxmx" -- [3]
-local OUTPUT_FILE = OUTPUT_NAME..OUTPUT_EXT
+local RBXM_FILE_NAME = "cure"
+local RBXM_FILE_EXT  = ".rbxmx" -- [1]
+local RBXM_FILE = RBXM_FILE_NAME..RBXM_FILE_EXT
 
 -- The instance that will be used to replicate the folder structure. Any
 -- instance can be used, but Folders are recommended.
@@ -487,14 +486,14 @@ local function recurseDir(path, obj, r)
 end
 
 -- Make sure the output directory exists
-lfs.mkdir(OUTPUT_DIR)
+lfs.mkdir(BUILD_DIR)
 
 local rbxmObj = recurseDir(SOURCE_DIR, {
   ClassName = CONTAINER_CLASS,
   Name = { "string", "cure" }
 })
 
-rbxm:save(rbxmObj, OUTPUT_DIR..(unpack(args) or OUTPUT_FILE))
+rbxm:save(rbxmObj, BUILD_DIR..(unpack(args) or RBXM_FILE))
 
 for i,v in ipairs(locations) do
   rbxm:save(rbxmObj, locations[i])
