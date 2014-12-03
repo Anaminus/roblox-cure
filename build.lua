@@ -56,22 +56,6 @@ local function splitName(path)
   return path, ""
 end
 
-local function createValue(className, name, value)
-  return {
-    ClassName = className .. "Value",
-    Name = { "string", name },
-    Value = { className:lower(), value }
-  }
-end
-
-local function checkScriptSyntax(source)
-  -- If it's a script, you want to make sure it can compile!
-  local func, err = loadstring(source, "")
-  if not func then
-    print("WARNING: " .. err:gsub("^%[.-%]:", "line "))
-  end
-end
-
 
 
 
@@ -241,6 +225,22 @@ end
 
 local rbxm = {}
 
+function rbxm:createValue(className, name, value)
+  return {
+    ClassName = className .. "Value",
+    Name = { "string", name },
+    Value = { className:lower(), value }
+  }
+end
+
+function rbxm:checkScriptSyntax(source)
+  -- If it's a script, you want to make sure it can compile!
+  local func, err = loadstring(source, "")
+  if not func then
+    print("WARNING: " .. err:gsub("^%[.-%]:", "line "))
+  end
+end
+
 -- Converts a RBXM table to a string.
 function rbxm:tabToStr(var)
   if type(var) ~= "table" then
@@ -338,7 +338,7 @@ local function handleFile(path, file, sub)
   end
 
   if not sub and file:lower() == "cure.server.lua" then
-    checkScriptSyntax(content)
+    rbxm:checkScriptSyntax(content)
 
     return {
       ClassName = "Script";
@@ -346,7 +346,7 @@ local function handleFile(path, file, sub)
       Source = { "ProtectedString", content};
     }
   elseif not sub and file:lower() == "cure.client.lua" then
-    checkScriptSyntax(content)
+    rbxm:checkScriptSyntax(content)
 
     return {
       ClassName = "LocalScript";
@@ -359,7 +359,7 @@ local function handleFile(path, file, sub)
   ext = ext:lower()
 
   if ext == "lua" then
-    checkScriptSyntax(content)
+    rbxm:checkScriptSyntax(content)
     local subname, subext = splitName(name)
 
     if subext:lower() == "script" then
@@ -379,15 +379,15 @@ local function handleFile(path, file, sub)
       local length = #content
 
       if length <= chunk then
-        return createValue("String", name, content)
+        return rbxm:createValue("String", name, content)
       else
-        local value = createValue("Bool", name, true)
+        local value = rbxm:createValue("Bool", name, true)
 
         for i = 1,math.ceil(length/chunk) do
           local a = (i - 1)*chunk + 1
           local b = a + chunk - 1
           b = b > length and length or b
-          value[i] = createValue("String", tostring(i), content:sub(a, b))
+          value[i] = rbxm:createValue("String", tostring(i), content:sub(a, b))
         end
 
         return value
@@ -400,7 +400,7 @@ local function handleFile(path, file, sub)
       print("WARNING: content of `" .. file .. "` must be a number")
     end
 
-    return createValue("Int", name, content)
+    return rbxm:createValue("Int", name, content)
   else
     return {
       ClassName = "Script";
