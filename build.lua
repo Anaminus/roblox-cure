@@ -13,7 +13,7 @@ local LOCATIONS = {
 
 -- Where source code is stored and compiled to
 local SOURCE_DIR = "source"
-local BUILD_DIR  = "build/"
+local BUILD_DIR  = "build"
 
 --[[
   The name and extension of the Model file that will be generated.
