@@ -96,7 +96,7 @@ function xml.escape(str)
     [">"] = "gt";
   }
   local out = ""
-  for i = 1,#str do
+  for i = 1, #str do
     local c = str:sub(i,i)
     if nameEsc[c] then
       c = "&" .. nameEsc[c] .. ";"
@@ -216,11 +216,11 @@ function encodeDataType.double(data)
 end
 
 function encodeDataType.int(data)
-    return string.format("%i",data)
+  return string.format("%i",data)
 end
 
 function encodeDataType.bool(data)
-    return not not data
+  return not not data
 end
 
 
