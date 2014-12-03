@@ -1,17 +1,42 @@
 
+--[[
+  This is Cure's build file. It compiles everything under the source directory
+  into a Roblox-compatible XML file that you can drag-and-drop into your game.
+
+  You'll need a Lua interpreter and the LuaFileSystem module installed to run
+  this file. In Windows this can be done by installing LuaForWindows[1], which
+  comes bundled with LuaFileSystem.
+
+  [1] https://code.google.com/p/luaforwindows/
+--]]
+
+local lfs = require "lfs"
+
 if _VERSION == "Lua 5.2" then
   unpack = table.unpack
 end
 
-local lfs = require "lfs"
 
--- Array of alternative paths to output the contents of the model.
+
+
+
+--[[
+  Configuration
+  ==============================================================================
+--]]
+
+--[[
+  Array of alternative paths to output the contents of the model. You must
+  specify the full file path and extension.
+--]]
 local LOCATIONS = {
   -- "output.rbxmx",
   -- "test/game.rbxmx"
 }
 
--- Where source code is stored and compiled to
+--[[
+  Where source code is stored and compiled to
+--]]
 local SOURCE_DIR = "source"
 local BUILD_DIR  = "build"
 
@@ -26,8 +51,10 @@ local RBXM_FILE_NAME = "cure"
 local RBXM_FILE_EXT  = ".rbxmx" -- [1]
 local RBXM_FILE = RBXM_FILE_NAME..RBXM_FILE_EXT
 
--- The instance that will be used to replicate the folder structure. Any
--- instance can be used, but Folders are recommended.
+--[[
+  The instance that will be used to replicate the folder structure. Any
+  instance can be used, but Folders are recommended.
+--]]
 local CONTAINER_CLASS = "Configuration"
 
 -- maximum length of strings in replicated instances
