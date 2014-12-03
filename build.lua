@@ -493,7 +493,9 @@ local rbxmObj = recurseDir(SOURCE_DIR, {
   Name = { "string", "cure" }
 })
 
-rbxm:save(rbxmObj, BUILD_DIR..(unpack(args) or RBXM_FILE))
+local rbxmPath = BUILD_DIR.."/"..unpack(args) or RBXM_FILE
+
+rbxm:save(rbxmObj, rbxmPath)
 
 for i,v in ipairs(LOCATIONS) do
   rbxm:save(rbxmObj, LOCATIONS[i])
