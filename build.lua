@@ -61,6 +61,15 @@ local function splitName(path)
   return path, ""
 end
 
+-- Extract the contents of a file
+local function getFileContents(path)
+  local file = assert(io.open(path))
+  local content = file:read("*a")
+  file:close()
+
+  return content
+end
+
 
 
 
@@ -238,6 +247,55 @@ function rbxm:createValue(className, name, value)
   }
 end
 
+-- Generate a new Script instance. Wrappers for this method are found below it.
+function rbxm:createScript(className, name, source, disabled)
+  local obj = {
+    ClassName = className;
+    Name = { "string", name };
+    Source = { "ProtectedString", source };
+  }
+
+  if disabled then
+    obj.Disabled = { "bool", true };
+  end
+
+  return obj
+end
+
+function rbxm:createServerScript(name, source, disabled)
+  return self:createScript("Script", name, source, disabled)
+end
+
+function rbxm:createLocalScript(name, source, disabled)
+  return self:createScript("LocalScript", name, source, disabled)
+end
+
+-- Create a value containing an asset's ID.
+function rbxm:createAsset(name, value)
+  content = tonumber(content)
+
+  if not content then
+    print("WARNING: content of `" .. file .. "` must be a number")
+  end
+
+  return createValue("Int", name, content)
+end
+
+-- Split apart the contents of the file into multiple StringValues, contained
+-- inside a BoolValue
+function rbxm:splitFileParts(length, chunk, content)
+  local container = rbxm:createValue("Bool", name, true)
+
+  for i = 1, math.ceil(length/chunk) do
+    local a = (i - 1)*chunk + 1
+    local b = a + chunk - 1
+    b = b > length and length or b
+    container[i] = rbxm:createValue("String", tostring(i), content:sub(a, b))
+  end
+
+  return container
+end
+
 function rbxm:checkScriptSyntax(source)
   -- If it's a script, you want to make sure it can compile!
   local func, err = loadstring(source, "")
@@ -335,84 +393,64 @@ end
 
 
 
-local function handleFile(path, file, sub)
-  local content do
-    local file = assert(io.open(path))
-    content = file:read("*a")
-    file:close()
+local cure = {}
+
+function cure:server(content)
+  return rbxm:createServerScript("cure.server", content)
+end
+
+function cure:client(content)
+  return rbxm:createLocalScript("cure.client", content)
+end
+
+
+
+
+
+local function handleFile(path, file, subfolder)
+  local content = getFileContents(path)
+  local name, extension = splitName(file)
+  local subName, subExtension = splitName(name)
+
+  extension = extension:lower()
+  subExtension = subExtension:lower()
+
+  -- Special handling for the main Cure scripts
+  if not subfolder then
+    rbxm:checkScriptSyntax(content)
+
+    if file:lower() == "cure.server.lua" then
+      return cure:server(content)
+    elseif file:lower() == "cure.client.lua" then
+      return cure:client(content)
+    end
   end
 
-  if not sub and file:lower() == "cure.server.lua" then
+  if extension == "lua" then
     rbxm:checkScriptSyntax(content)
 
-    return {
-      ClassName = "Script";
-      Name = { "string", "cure.server" };
-      Source = { "ProtectedString", content};
-    }
-  elseif not sub and file:lower() == "cure.client.lua" then
-    rbxm:checkScriptSyntax(content)
-
-    return {
-      ClassName = "LocalScript";
-      Name = { "string", "cure.client" };
-      Source = { "ProtectedString", content};
-    }
-  end
-
-  local name, ext = splitName(file)
-  ext = ext:lower()
-
-  if ext == "lua" then
-    rbxm:checkScriptSyntax(content)
-    local subname, subext = splitName(name)
-
-    if subext:lower() == "script" then
-      return {
-        ClassName = "Script";
-        Name = { "string", subname};
-        Source = { "ProtectedString", content };
-      }
-    elseif subext:lower() == "localscript" then
-      return {
-        ClassName = "LocalScript";
-        Name = { "string", subname };
-        Source = { "ProtectedString", content };
-      }
+    if subExtension == "script" then
+      return rbxm:createServerScript(subName, content)
+    elseif subExtension == "localscript" then
+      return rbxm:createLocalScript(subName, content)
     else
       local chunk = MAX_STRING_LENGTH
       local length = #content
 
       if length <= chunk then
+        -- Create a StringValue to hold the source of the file
         return rbxm:createValue("String", name, content)
       else
-        local value = rbxm:createValue("Bool", name, true)
-
-        for i = 1,math.ceil(length/chunk) do
-          local a = (i - 1)*chunk + 1
-          local b = a + chunk - 1
-          b = b > length and length or b
-          value[i] = rbxm:createValue("String", tostring(i), content:sub(a, b))
-        end
-
-        return value
+        -- If the file is too big, split it into multiple parts
+        return rbxm:splitFileParts(length, chunk, content)
       end
     end
   elseif ext == "asset" then
-    content = tonumber(content)
-
-    if not content then
-      print("WARNING: content of `" .. file .. "` must be a number")
-    end
-
-    return rbxm:createValue("Int", name, content)
+    -- Create an IntValue containing a Roblox AssetID
+    return rbxm:createAsset(name, content)
   else
-    return {
-      ClassName = "Script";
-      Name = { "string", name };
-      Disabled = { "bool", true };
-      Source = { "ProtectedString", "--[==[\n" .. content .. "\n--]==]" };
-    }
+    -- Disable and comment out anything else
+    return rbxm:createServerScript(name, "--[==[\n"..content.."\n--]==]", true)
   end
 end
 
