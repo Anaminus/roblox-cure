@@ -11,10 +11,6 @@ local LOCATIONS = {
   -- "test/game.rbxmx"
 }
 
--- Command-line arguments are contained here. Used to override the OUTPUT_NAME
--- constant.
-local args = {...}
-
 -- Where source code is stored and compiled to
 local SOURCE_DIR = "source"
 local BUILD_DIR  = "build/"
@@ -485,18 +481,24 @@ local function recurseDir(path, obj, r)
   return obj
 end
 
--- Make sure the output directory exists
-lfs.mkdir(BUILD_DIR)
+function compile(args)
+  local rbxmObj = recurseDir(SOURCE_DIR, {
+    ClassName = CONTAINER_CLASS,
+    Name = { "string", "cure" }
+  })
 
-local rbxmObj = recurseDir(SOURCE_DIR, {
-  ClassName = CONTAINER_CLASS,
-  Name = { "string", "cure" }
-})
+  local rbxmPath = BUILD_DIR.."/"..(unpack(args) or RBXM_FILE)
 
-local rbxmPath = BUILD_DIR.."/"..unpack(args) or RBXM_FILE
+  -- Make sure the output directory exists
+  lfs.mkdir(BUILD_DIR)
 
-rbxm:save(rbxmObj, rbxmPath)
+  -- Generate the model
+  rbxm:save(rbxmObj, rbxmPath)
 
-for i,v in ipairs(LOCATIONS) do
-  rbxm:save(rbxmObj, LOCATIONS[i])
+  -- Save the model to other locations
+  for i,v in ipairs(LOCATIONS) do
+    rbxm:save(rbxmObj, LOCATIONS[i])
+  end
 end
+
+compile({...})
