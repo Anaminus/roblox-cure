@@ -6,7 +6,7 @@ end
 local lfs = require "lfs"
 
 -- Array of alternative paths to output the contents of the model.
-local locations = {
+local LOCATIONS = {
   -- "output.rbxmx",
   -- "test/game.rbxmx"
 }
@@ -495,6 +495,6 @@ local rbxmObj = recurseDir(SOURCE_DIR, {
 
 rbxm:save(rbxmObj, BUILD_DIR..(unpack(args) or RBXM_FILE))
 
-for i,v in ipairs(locations) do
-  rbxm:save(rbxmObj, locations[i])
+for i,v in ipairs(LOCATIONS) do
+  rbxm:save(rbxmObj, LOCATIONS[i])
 end
