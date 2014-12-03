@@ -234,6 +234,14 @@ end
 
 local rbxm = {}
 
+--[[
+  Create a Value instance (Int, String, Bool, etc).
+
+  @param string className  Any Roblox instance that ends in "Value"
+  @param string name       Name of the Value
+  @param any    value      Depends on which instance you use. If you're using a
+                           StringValue then this must be a string.
+--]]
 function rbxm:createValue(className, name, value)
   return {
     ClassName = className .. "Value",
@@ -242,7 +250,14 @@ function rbxm:createValue(className, name, value)
   }
 end
 
--- Generate a new Script instance. Wrappers for this method are found below it.
+--[[
+  Generate a new Script instance. Wrappers for this method are found below it.
+
+  @param string className  Type of script. Eg. "Script" or "LocalScript"
+  @param string name       Name of the script
+  @param string source     The Lua source of the script
+  @param bool   disabled   If the script can run automatically
+--]]
 function rbxm:createScript(className, name, source, disabled)
   local obj = {
     ClassName = className;
@@ -265,7 +280,13 @@ function rbxm:createLocalScript(name, source, disabled)
   return self:createScript("LocalScript", name, source, disabled)
 end
 
--- Create a value containing an asset's ID.
+--[[
+  Create a value containing an asset's ID.
+
+  @param string name  Name of the value
+  @param number value ID of a Roblox asset. The number at the end of the URL on
+                      a Model. Eg. 42891177, 40469899, 39053953
+--]]
 function rbxm:createAsset(name, value)
   content = tonumber(content)
 
@@ -276,8 +297,22 @@ function rbxm:createAsset(name, value)
   return createValue("Int", name, content)
 end
 
--- Split apart the contents of the file into multiple StringValues, contained
--- inside a BoolValue
+--[[
+  Split apart the contents of the file into multiple StringValues, contained
+  inside a BoolValue.
+
+  Example (varies, depending on size):
+
+    extremely-large-file.lua
+
+  Turns into:
+
+    extremely-large-file
+    - 1
+    - 2
+    - 3
+    - etc.
+--]]
 function rbxm:splitFileParts(length, chunk, content)
   local container = rbxm:createValue("Bool", name, true)
 
@@ -291,8 +326,11 @@ function rbxm:splitFileParts(length, chunk, content)
   return container
 end
 
+--[[
+  Lua files are checked for syntax errors. Note that a file with an error will
+  still be built regardless.
+--]]
 function rbxm:checkScriptSyntax(source)
-  -- If it's a script, you want to make sure it can compile!
   local func, err = loadstring(source, "")
   if not func then
     print("WARNING: " .. err:gsub("^%[.-%]:", "line "))
@@ -412,6 +450,16 @@ end
   ==============================================================================
 --]]
 
+--[[
+  Run functions for specific types of files.
+
+  @param string path       Full path to the current file. LFS needs this to read
+                           the file.
+  @param string file       Name and extension of the file.
+  @param bool   subfolder  Cure's scripts live in the root of the source dir, if
+                           'subfolder' is true it's safe to assume that the
+                           following scripts belong to Cure.
+--]]
 local function handleFile(path, file, subfolder)
   local content = getFileContents(path)
   local name, extension = splitName(file)
@@ -481,6 +529,14 @@ local function recurseDir(path, obj, r)
   return obj
 end
 
+--[[
+  Compile the directory structure and the source code into a Roblox-compatible
+  file. Configure the paths and filenames at the top of this file.
+
+  @param String args
+    Arguments from the command-line. Only supports one argument, which alters
+    the path that the model file is built to.
+--]]
 function compile(args)
   local rbxmObj = recurseDir(SOURCE_DIR, {
     ClassName = CONTAINER_CLASS,
