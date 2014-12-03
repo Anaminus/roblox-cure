@@ -393,6 +393,11 @@ end
 
 
 
+--[[
+  Cure
+  ==============================================================================
+--]]
+
 local cure = {}
 
 function cure:server(content)
@@ -406,6 +411,11 @@ end
 
 
 
+
+--[[
+  Compiling
+  ==============================================================================
+--]]
 
 local function handleFile(path, file, subfolder)
   local content = getFileContents(path)
