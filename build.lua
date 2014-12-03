@@ -6,6 +6,10 @@ local locations = {
   -- "test/game.rbxmx"
 }
 
+-- Command-line arguments are contained here. Used to override the OUTPUT_NAME
+-- constant.
+local args = {...}
+
 if _VERSION == "Lua 5.2" then
   unpack = table.unpack
 end
@@ -438,7 +442,7 @@ local rbxmObj = recurseDir(SOURCE_DIR, {
   Name = { "string", "cure" }
 })
 
-rbxm:save(rbxmObj, OUTPUT_DIR..((...) or OUTPUT_FILE))
+rbxm:save(rbxmObj, OUTPUT_DIR..(unpack(args) or OUTPUT_FILE))
 
 for i,v in ipairs(locations) do
   rbxm:save(rbxmObj, locations[i])
