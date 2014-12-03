@@ -1,3 +1,8 @@
+
+if _VERSION == "Lua 5.2" then
+  unpack = table.unpack
+end
+
 local lfs = require "lfs"
 
 -- Array of alternative paths to output the contents of the model.
@@ -9,10 +14,6 @@ local locations = {
 -- Command-line arguments are contained here. Used to override the OUTPUT_NAME
 -- constant.
 local args = {...}
-
-if _VERSION == "Lua 5.2" then
-  unpack = table.unpack
-end
 
 -- Where source code is stored
 local SOURCE_DIR = "source"
