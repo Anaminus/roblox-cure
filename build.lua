@@ -299,12 +299,12 @@ function rbxm:createScript(className, name, source, disabled)
   return obj
 end
 
-function rbxm:createServerScript(name, source, disabled)
-  return self:createScript("Script", name, source, disabled)
+function rbxm:createServerScript(...)
+  return self:createScript("Script", ...)
 end
 
-function rbxm:createLocalScript(name, source, disabled)
-  return self:createScript("LocalScript", name, source, disabled)
+function rbxm:createLocalScript(...)
+  return self:createScript("LocalScript", ...)
 end
 
 --[[
