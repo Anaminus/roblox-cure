@@ -486,6 +486,9 @@ local function recurseDir(path, obj, r)
   return obj
 end
 
+-- Make sure the output directory exists
+lfs.mkdir(OUTPUT_DIR)
+
 local rbxmObj = recurseDir(SOURCE_DIR, {
   ClassName = CONTAINER_CLASS,
   Name = { "string", "cure" }
