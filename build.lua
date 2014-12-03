@@ -28,7 +28,7 @@ local RBXM_FILE = RBXM_FILE_NAME..RBXM_FILE_EXT
 
 -- The instance that will be used to replicate the folder structure. Any
 -- instance can be used, but Folders are recommended.
-local CONTAINER_CLASS = "Folder"
+local CONTAINER_CLASS = "Configuration"
 
 -- maximum length of strings in replicated instances
 local MAX_STRING_LENGTH = 200000 - 1
