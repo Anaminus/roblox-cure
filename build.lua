@@ -373,11 +373,13 @@ function rbxm:createLocalScript(...)
 end
 
 --[[
-  Create a value containing an asset's ID.
+  Create an IntValue containing the ID of a Roblox asset. Things like Models,
+  Decals and T-Shirts are all assets, and you can find their ID at the end of
+  the URL.
 
   @param string name  Name of the value
   @param number value ID of a Roblox asset. The number at the end of the URL on
-                      a Model. Eg. 42891177, 40469899, 39053953
+                      an item. Eg. 42891177, 40469899, 39053953
 --]]
 function rbxm:createAsset(name, value)
   content = tonumber(content)
