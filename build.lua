@@ -112,8 +112,8 @@ local xml = {
 -- this will be decoded automatically by Cure
 function xml.encodeTruncEsc(str)
   local first = str:sub(1,1)
-  if first:match("%s") or first == [[\]] then
-    return [[\]] .. str
+  if first:match("%s") or first == "\\" then
+    return "\\" .. str
   end
   return str
 end
