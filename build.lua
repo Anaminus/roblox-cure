@@ -104,13 +104,51 @@ end
 local xml = {
   -- Global indentation for the RBXM file. This is modified by the indent method
   -- to increase and decrease the indentation of XML elements.
-  indentLevel = 0
+  indentLevel = 0,
+
+  -- Characters that need to be escaped before being added to the XML string.
+  escapeChars = {
+    ["\""] = "quot",
+    ["&"]  = "amp",
+    ["'"]  = "apos",
+    ["<"]  = "lt",
+    [">"]  = "gt"
+  }
 }
 
--- because of the way XML is parsed, leading spaces get truncated
--- so, simply add a "\" when a space or "\" is detected as the first character
--- this will be decoded automatically by Cure
-function xml.encodeTruncEsc(str)
+--[[
+  Create a new XML object. Each instance has a 'contents' property which
+  contains each line of XML you write to it as a string.
+
+  The strings in 'contents' are later concatenated together to be output
+  to a file.
+
+    local test = xml:new()
+    test:write( 0, "<name>")
+    test:write( 1, "<first>John</first>")
+    test:write( 0, "<last>Smith</last>")
+    test:write(-1, "</name>")
+
+    -- <name>
+    --   <first>John</first>
+    --   <last>Smith</last>
+    -- </name>
+--]]
+function xml:new(opts)
+  local opts = opts or {}
+  opts.contents = opts.contents or {}  -- [1]
+
+  setmetatable(opts, self)
+  self.__index = self
+  return opts
+end
+
+--[[
+  Because of the way XML is parsed, leading spaces get truncated. So simply add
+  a "\" when a space or "\" is detected as the first character. This will be
+  decoded automatically by Cure
+--]]
+function xml:encodeTruncEsc(str)
   local first = str:sub(1,1)
   if first:match("%s") or first == "\\" then
     return "\\" .. str
@@ -118,42 +156,44 @@ function xml.encodeTruncEsc(str)
   return str
 end
 
-function xml.escape(str)
-  local nameEsc = {
-    ["\""] = "quot";
-    ["&"] = "amp";
-    ["'"] = "apos";
-    ["<"] = "lt";
-    [">"] = "gt";
-  }
+--[[
+  Certain characters need to be escaped to work properly in the XML. Because XML
+  uses < and > to denote tags, they have to be escaped to &lt; and &gt; for use
+  in properties and scripts.
+--]]
+function xml:escape(str)
   local out = ""
   for i = 1, #str do
-    local c = str:sub(i,i)
-    if nameEsc[c] then
-      c = "&" .. nameEsc[c] .. ";"
-    elseif not c:match("^[\10\13\32-\126]$") then
-      c = "&#" .. c:byte() .. ";"
+    local char = str:sub(i,i)
+    if self.escapeChars[char] then
+      char = "&"..self.escapeChars[char]..";"
+    elseif not char:match("^[\10\13\32-\126]$") then
+      char = "&#"..char:byte()..";"
     end
-    out = out .. c
+    out = out..char
   end
   return out
 end
 
-function xml.concat(tab, ...)
+--[[
+  Append the arguments onto the self.contents table. Later on, all the strings
+  in self.contents are concatenated into a single string, which gets turned into
+  an XML file.
+--]]
+function xml:concat(...)
   local args = {...}
 
   local function concat(arg)
     if type(arg) == "table" then
       concat(unpack(arg))
     else
-      tab[#tab+1] = tostring(arg)
+      self.contents[#self.contents+1] = tostring(arg)
     end
   end
 
   for i = 1, #args do
     concat(args[i])
   end
-  return file
 end
 
 --[[
@@ -166,17 +206,17 @@ end
   Example:
 
     <roblox ...>
-      <Item class="Script">                   -- xml.indent( 1)
-        <Properties>                          -- xml.indent( 1)
-          <string name="Name">Script</string> -- xml.indent( 1)
+      <Item class="Script">                   -- xml:indent( 1)
+        <Properties>                          -- xml:indent( 1)
+          <string name="Name">Script</string> -- xml:indent( 1)
           <ProtectedString name="Source"></ProtectedString> -- no indentation needed
-        </Properties>                         -- xml.indent(-1)
-      </Item>                                 -- xml.indent(-1)
+        </Properties>                         -- xml:indent(-1)
+      </Item>                                 -- xml:indent(-1)
     </roblox>
 
   @param number indentSize Number of times you want to indent the next lines.
 --]]
-function xml.indent(indentSize)
+function xml:indent(indentSize)
   if indentSize then
     xml.indentLevel = xml.indentLevel + indentSize
   end
@@ -187,13 +227,15 @@ end
   Write a newline to a table containing XML strings. Each line can be optionally
   indented.
 
-  @param table  tab        A container that has table.concat run on it to merge
-                           the XML strings.
   @param number indentSize Number of times you want to indent the next lines.
-  @param ...    arg        Any number of values that can be turned into a string.
+  @param        ...        Any number of values that can be turned into a string.
 --]]
-function xml.write(tab, indentSize, ...)
-  xml.concat(tab, "\n"..xml.indent(indentSize), ...)
+function xml:write(indentSize, ...)
+  if type(indentSize) == "number" then
+    self:concat("\n"..self:indent(indentSize), ...)
+  else
+    self:concat("\n"..self:indent(), indentSize, ...)
+  end
 end
 
 
@@ -208,29 +250,29 @@ end
 local encodeDataType = {}
 
 function encodeDataType.string(data)
-  return xml.encodeTruncEsc(xml.escape(data))
+  return xml:encodeTruncEsc(xml:escape(data))
 end
 
 function encodeDataType.ProtectedString(data)
-  return xml.encodeTruncEsc(xml.escape(data))
+  return xml:encodeTruncEsc(xml:escape(data))
 end
 
 function encodeDataType.CoordinateFrame(data, tab)
   local d = { data:components() }
   return {
-    "\n", tab( 1), [[<X>]],   d[1],  [[</X>]];
-    "\n", tab(  ), [[<Y>]],   d[2],  [[</Y>]];
-    "\n", tab(  ), [[<Z>]],   d[3],  [[</Z>]];
-    "\n", tab(  ), [[<R00>]], d[4],  [[</R00>]];
-    "\n", tab(  ), [[<R01>]], d[5],  [[</R01>]];
-    "\n", tab(  ), [[<R02>]], d[6],  [[</R02>]];
-    "\n", tab(  ), [[<R10>]], d[7],  [[</R10>]];
-    "\n", tab(  ), [[<R11>]], d[8],  [[</R11>]];
-    "\n", tab(  ), [[<R12>]], d[9],  [[</R12>]];
-    "\n", tab(  ), [[<R20>]], d[10], [[</R20>]];
-    "\n", tab(  ), [[<R21>]], d[11], [[</R21>]];
-    "\n", tab(  ), [[<R22>]], d[12], [[</R22>]];
-    "\n", tab(-1);
+    "\n", xml:indent( 1), "<X>",   d[1],  "</X>";
+    "\n", xml:indent( 0), "<Y>",   d[2],  "</Y>";
+    "\n", xml:indent( 0), "<Z>",   d[3],  "</Z>";
+    "\n", xml:indent( 0), "<R00>", d[4],  "</R00>";
+    "\n", xml:indent( 0), "<R01>", d[5],  "</R01>";
+    "\n", xml:indent( 0), "<R02>", d[6],  "</R02>";
+    "\n", xml:indent( 0), "<R10>", d[7],  "</R10>";
+    "\n", xml:indent( 0), "<R11>", d[8],  "</R11>";
+    "\n", xml:indent( 0), "<R12>", d[9],  "</R12>";
+    "\n", xml:indent( 0), "<R20>", d[10], "</R20>";
+    "\n", xml:indent( 0), "<R21>", d[11], "</R21>";
+    "\n", xml:indent( 0), "<R22>", d[12], "</R22>";
+    "\n", xml:indent(-1);
   }
 end
 
@@ -250,44 +292,44 @@ function encodeDataType.Ray(data, tab)
   local o = data.Origin
   local d = data.Direction
   return {
-    "\n", tab( 1), [[<origin>]];
-    "\n", tab( 1), [[<X>]], o.x, [[</X>]];
-    "\n", tab(  ), [[<Y>]], o.y, [[</Y>]];
-    "\n", tab(  ), [[<Z>]], o.z, [[</Z>]];
-    "\n", tab(-1), [[</origin>]];
-    "\n", tab(  ), [[<direction>]];
-    "\n", tab( 1), [[<X>]], d.x, [[</x>]];
-    "\n", tab(  ), [[<Y>]], d.y, [[</Y>]];
-    "\n", tab(  ), [[<Z>]], d.z, [[</Z>]];
-    "\n", tab(-1), [[</direction>]];
-    "\n"; tab(-1);
+    "\n", xml:indent( 1), "<origin>";
+    "\n", xml:indent( 1), "<X>", o.x, "</X>";
+    "\n", xml:indent(  ), "<Y>", o.y, "</Y>";
+    "\n", xml:indent(  ), "<Z>", o.z, "</Z>";
+    "\n", xml:indent(-1), "</origin>";
+    "\n", xml:indent(  ), "<direction>";
+    "\n", xml:indent( 1), "<X>", d.x, "</x>";
+    "\n", xml:indent(  ), "<Y>", d.y, "</Y>";
+    "\n", xml:indent(  ), "<Z>", d.z, "</Z>";
+    "\n", xml:indent(-1), "</direction>";
+    "\n"; xml:indent(-1);
   }
 end
 
 function encodeDataType.Vector3(data, tab)
   return {
-    "\n", tab( 1), [[<X>]], data.x, [[</X>]];
-    "\n", tab(  ), [[<Y>]], data.y, [[</Y>]];
-    "\n", tab( 0), [[<Z>]], data.z, [[</Z>]];
-    "\n"; tab(-1);
+    "\n", xml:indent( 1), "<X>", data.x, "</X>";
+    "\n", xml:indent(  ), "<Y>", data.y, "</Y>";
+    "\n", xml:indent( 0), "<Z>", data.z, "</Z>";
+    "\n"; xml:indent(-1);
   }
 end
 
 function encodeDataType.Vector2(data, tab)
   return {
-    "\n", tab( 1), [[<X>]], data.x, [[</X>]];
-    "\n", tab( 0), [[<Y>]], data.y, [[</Y>]];
-    "\n"; tab(-1);
+    "\n", xml:indent( 1), "<X>", data.x, "</X>";
+    "\n", xml:indent( 0), "<Y>", data.y, "</Y>";
+    "\n"; xml:indent(-1);
   }
 end
 
 function encodeDataType.UDim2(data, tab)
   return {
-    "\n", tab( 1), [[<XS>]], data.X.Scale,  [[</XS>]];
-    "\n", tab(  ), [[<XO>]], data.X.Offset, [[</XO>]];
-    "\n", tab(  ), [[<YS>]], data.Y.Scale,  [[</YS>]];
-    "\n", tab( 0), [[<YO>]], data.Y.Offset, [[</YO>]];
-    "\n"; tab(-1);
+    "\n", xml:indent( 1), "<XS>", data.X.Scale,  "</XS>";
+    "\n", xml:indent(  ), "<XO>", data.X.Offset, "</XO>";
+    "\n", xml:indent(  ), "<YS>", data.Y.Scale,  "</YS>";
+    "\n", xml:indent( 0), "<YO>", data.Y.Offset, "</YO>";
+    "\n"; xml:indent(-1);
   }
 end
 
@@ -492,12 +534,12 @@ end
   [3] Recurse and add children.
 --]]
 function rbxm:body(object)
-  local content = {}
+  local body = xml:new()
 
   local function writeXML(object)
-    xml.write(content, 1, string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
-    xml.write(content, 1, "<Properties>")
-    xml.indent(1) -- [1]
+    body:write(0, string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
+    body:write(1, "<Properties>")
+    body:indent(1) -- [1]
 
     local props = rbxm:getProperties(object) -- [2]
 
@@ -506,21 +548,21 @@ function rbxm:body(object)
       local propType  = object[propName][1]
       local propValue = object[propName][2]
 
-      propValue = self:encodePropertyValue(propType, propValue)
-      xml.write(content, 0, string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
+      propValue = tostring(self:encodePropertyValue(propType, propValue))
+      body:write(0, string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
-    xml.write(content, -1, "</Properties>")
+    body:write(-1, "</Properties>")
 
     for i = 1, #object do -- [3]
       writeXML(object[i])
     end
 
-    xml.write(content, -1, "</Item>")
+    body:write(-1, "</Item>")
   end
   writeXML(object)
 
-  return table.concat(content)
+  return table.concat(body.contents)
 end
 
 --[[
@@ -534,18 +576,17 @@ function rbxm:tabToStr(object)
     error("table expected", 2)
   end
 
-  local content = {}
   local body = self:body(object)
-
-  xml.concat(content, "<roblox "..
+  local file = xml:new()
+  file:write(0, "<roblox "..
     "xmlns:xmime=\"http://www.w3.org/2005/05/xmlmime\" "..
     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "..
     "xsi:noNamespaceSchemaLocation=\"http://www.roblox.com/roblox.xsd\" "..
     "version=\"4\">")
-  xml.concat(content, body)
-  xml.concat(content, "\n</roblox>")
+  file:write(1, body)
+  file:write(0, "\n</roblox>")
 
-  return table.concat(content)
+  return table.concat(file.contents)
 end
 
 -- Saves an RBXM string or table.
