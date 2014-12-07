@@ -243,121 +243,6 @@ end
 
 
 --[[
-  Data Types
-  ==============================================================================
---]]
-
-local encodeDataType = {}
-
-function encodeDataType.string(data)
-  return xml:encodeTruncEsc(xml:escape(data))
-end
-
-function encodeDataType.ProtectedString(data)
-  return xml:encodeTruncEsc(xml:escape(data))
-end
-
-function encodeDataType.CoordinateFrame(data, tab)
-  local d = { data:components() }
-  return {
-    "\n", xml:indent( 1), "<X>",   d[1],  "</X>";
-    "\n", xml:indent( 0), "<Y>",   d[2],  "</Y>";
-    "\n", xml:indent( 0), "<Z>",   d[3],  "</Z>";
-    "\n", xml:indent( 0), "<R00>", d[4],  "</R00>";
-    "\n", xml:indent( 0), "<R01>", d[5],  "</R01>";
-    "\n", xml:indent( 0), "<R02>", d[6],  "</R02>";
-    "\n", xml:indent( 0), "<R10>", d[7],  "</R10>";
-    "\n", xml:indent( 0), "<R11>", d[8],  "</R11>";
-    "\n", xml:indent( 0), "<R12>", d[9],  "</R12>";
-    "\n", xml:indent( 0), "<R20>", d[10], "</R20>";
-    "\n", xml:indent( 0), "<R21>", d[11], "</R21>";
-    "\n", xml:indent( 0), "<R22>", d[12], "</R22>";
-    "\n", xml:indent(-1);
-  }
-end
-
-function encodeDataType.Color3(data)
-  return tonumber(string.format("0xFF%02X%02X%02X", data.r*255, data.g*255, data.b*255))
-end
-
-function encodeDataType.Content(data)
-  if #data == 0 then
-    return "<null></null>"
-  else
-    return { "<url>"..data.."</url>" }
-  end
-end
-
-function encodeDataType.Ray(data, tab)
-  local o = data.Origin
-  local d = data.Direction
-  return {
-    "\n", xml:indent( 1), "<origin>";
-    "\n", xml:indent( 1), "<X>", o.x, "</X>";
-    "\n", xml:indent(  ), "<Y>", o.y, "</Y>";
-    "\n", xml:indent(  ), "<Z>", o.z, "</Z>";
-    "\n", xml:indent(-1), "</origin>";
-    "\n", xml:indent(  ), "<direction>";
-    "\n", xml:indent( 1), "<X>", d.x, "</x>";
-    "\n", xml:indent(  ), "<Y>", d.y, "</Y>";
-    "\n", xml:indent(  ), "<Z>", d.z, "</Z>";
-    "\n", xml:indent(-1), "</direction>";
-    "\n"; xml:indent(-1);
-  }
-end
-
-function encodeDataType.Vector3(data, tab)
-  return {
-    "\n", xml:indent( 1), "<X>", data.x, "</X>";
-    "\n", xml:indent(  ), "<Y>", data.y, "</Y>";
-    "\n", xml:indent( 0), "<Z>", data.z, "</Z>";
-    "\n"; xml:indent(-1);
-  }
-end
-
-function encodeDataType.Vector2(data, tab)
-  return {
-    "\n", xml:indent( 1), "<X>", data.x, "</X>";
-    "\n", xml:indent( 0), "<Y>", data.y, "</Y>";
-    "\n"; xml:indent(-1);
-  }
-end
-
-function encodeDataType.UDim2(data, tab)
-  return {
-    "\n", xml:indent( 1), "<XS>", data.X.Scale,  "</XS>";
-    "\n", xml:indent(  ), "<XO>", data.X.Offset, "</XO>";
-    "\n", xml:indent(  ), "<YS>", data.Y.Scale,  "</YS>";
-    "\n", xml:indent( 0), "<YO>", data.Y.Offset, "</YO>";
-    "\n"; xml:indent(-1);
-  }
-end
-
-function encodeDataType.Ref(data)
-  if data == nil then
-    return "null"
-  else
-    return data
-  end
-end
-
-function encodeDataType.double(data)
-  return string.format("%f",data)
-end
-
-function encodeDataType.int(data)
-  return string.format("%i",data)
-end
-
-function encodeDataType.bool(data)
-  return not not data
-end
-
-
-
-
-
---[[
   Roblox Models
   ==============================================================================
 --]]
@@ -486,21 +371,6 @@ function rbxm:referent()
 end
 
 --[[
-  Uses methods in the encodeDataType object to convert Roblox properties into
-  XML-safe strings.
-
-  @param propType  The ClassName of the property. CFrame, Ray and UDim2 would
-                   all be applicable.
-  @param propValue The value to be encoded.
---]]
-function rbxm:encodePropertyValue(propType, propValue)
-  if encodeDataType[propType] then
-    propValue = encodeDataType[propType](propValue, tab)
-  end
-  return propValue
-end
-
---[[
   Extract the properties from an instance.
 
   @param table object A table contaiing key/value pairs that replicate the
@@ -546,9 +416,7 @@ function rbxm:body(object)
     for i = 1, #props do
       local propName  = props[i]
       local propType  = object[propName][1]
-      local propValue = object[propName][2]
-
-      propValue = tostring(self:encodePropertyValue(propType, propValue))
+      local propValue = tostring(object[propName][2])
       body:write(0, string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
