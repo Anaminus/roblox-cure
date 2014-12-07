@@ -151,7 +151,7 @@ end
 function xml:encodeTruncEsc(str)
   local first = str:sub(1,1)
   if first:match("%s") or first == "\\" then
-    return "\\" .. str
+    return "\\"..str
   end
   return str
 end
@@ -282,9 +282,9 @@ end
 
 function encodeDataType.Content(data)
   if #data == 0 then
-    return [[<null></null>]]
+    return "<null></null>"
   else
-    return {[[<url>]],data,[[</url>]]}
+    return { "<url>"..data.."</url>" }
   end
 end
 
