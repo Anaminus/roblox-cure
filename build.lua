@@ -231,7 +231,7 @@ end
 
   @param number indentSize Number of times you want to indent the next lines.
 --]]
-function xml:indent(indentSize)
+function xml:ind(indentSize)
   if indentSize then
     xml.indentLevel = xml.indentLevel + indentSize
   end
@@ -410,9 +410,9 @@ function rbxm:body(object)
   local ref = self:referent()
 
   local function writeXML(object)
-    body:ln():indent(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
-    body:ln():indent(1):append("<Properties>")
-    body:ln():indent(1) -- [1]
+    body:ln():ind(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
+    body:ln():ind(1):append("<Properties>")
+    body:ln():ind(1) -- [1]
 
     local props = rbxm:getProperties(object) -- [2]
 
@@ -423,13 +423,13 @@ function rbxm:body(object)
       body:append(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
-    body:ln():indent(-1):append("</Properties>")
+    body:ln():ind(-1):append("</Properties>")
 
     for i = 1, #object do -- [3]
       writeXML(object[i])
     end
 
-    body:ln():indent(-1):append("</Item>")
+    body:ln():ind(-1):append("</Item>")
   end
   writeXML(object)
 
