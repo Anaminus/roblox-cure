@@ -180,7 +180,7 @@ end
   in self.contents are concatenated into a single string, which gets turned into
   an XML file.
 --]]
-function xml:concat(...)
+function xml:append(...)
   local args = {...}
 
   local function concat(arg)
@@ -220,7 +220,7 @@ function xml:indent(indentSize)
   if indentSize then
     xml.indentLevel = xml.indentLevel + indentSize
   end
-  self:concat(string.rep("\t", xml.indentLevel))
+  self:append(string.rep("\t", xml.indentLevel))
   return self
 end
 
@@ -230,7 +230,7 @@ end
   @param ... Any number of values that can be turned into a string.
 --]]
 function xml:write(...)
-  self:concat(..., "\n")
+  self:append(..., "\n")
   return self
 end
 
