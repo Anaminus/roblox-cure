@@ -199,6 +199,19 @@ function xml:append(...)
 end
 
 --[[
+  Used at the start of an XML chain to start everything off on a newline.
+
+  Example:
+
+    xml:new()
+      :ln():indent(1):append("<Test></Test>") -- "\n\t<Test></Test>"
+--]]
+function xml:ln()
+  self:append("\n")
+  return self
+end
+
+--[[
   Indents a line to make reading the XML easier. Who wants to read unindented
   markup?
 
@@ -222,7 +235,7 @@ function xml:indent(indentSize)
   if indentSize then
     xml.indentLevel = xml.indentLevel + indentSize
   end
-  self:append("\n"..string.rep("\t", xml.indentLevel))
+  self:append(string.rep("\t", xml.indentLevel))
   return self
 end
 
@@ -397,9 +410,9 @@ function rbxm:body(object)
   local ref = self:referent()
 
   local function writeXML(object)
-    body:indent(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
-    body:indent(1):append("<Properties>")
-    body:indent(1) -- [1]
+    body:ln():indent(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
+    body:ln():indent(1):append("<Properties>")
+    body:ln():indent(1) -- [1]
 
     local props = rbxm:getProperties(object) -- [2]
 
@@ -410,13 +423,13 @@ function rbxm:body(object)
       body:append(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
-    body:indent(-1):append("</Properties>")
+    body:ln():indent(-1):append("</Properties>")
 
     for i = 1, #object do -- [3]
       writeXML(object[i])
     end
 
-    body:indent(-1):append("</Item>")
+    body:ln():indent(-1):append("</Item>")
   end
   writeXML(object)
 
@@ -441,8 +454,8 @@ function rbxm:tabToStr(object)
     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "..
     "xsi:noNamespaceSchemaLocation=\"http://www.roblox.com/roblox.xsd\" "..
     "version=\"4\">")
-  file:append(body)
-  file:append("</roblox>")
+  file:ln():append(body)
+  file:ln():append("</roblox>")
 
   return table.concat(file.contents)
 end
