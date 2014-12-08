@@ -104,7 +104,7 @@ end
 local xml = {
   -- Global indentation for the RBXM file. This is modified by the indent method
   -- to increase and decrease the indentation of XML elements.
-  indentLevel = 0,
+  indentLevel = 1,
 
   -- Characters that need to be escaped before being added to the XML string.
   escapeChars = {
@@ -124,10 +124,10 @@ local xml = {
   to a file.
 
     local test = xml:new()
-    test:write( 0, "<name>")
-    test:write( 1, "<first>John</first>")
-    test:write( 0, "<last>Smith</last>")
-    test:write(-1, "</name>")
+    test:write("<name>")
+    test:indent(1):write("<first>John</first>")
+    test:indent(1):write("<last>Smith</last>")
+    test:write("</name>")
 
     -- <name>
     --   <first>John</first>
@@ -220,22 +220,18 @@ function xml:indent(indentSize)
   if indentSize then
     xml.indentLevel = xml.indentLevel + indentSize
   end
-  return string.rep("\t", xml.indentLevel)
+  self:concat(string.rep("\t", xml.indentLevel))
+  return self
 end
 
 --[[
-  Write a newline to a table containing XML strings. Each line can be optionally
-  indented.
+  Append any number of values to a table containing XML strings.
 
-  @param number indentSize Number of times you want to indent the next lines.
-  @param        ...        Any number of values that can be turned into a string.
+  @param ... Any number of values that can be turned into a string.
 --]]
-function xml:write(indentSize, ...)
-  if type(indentSize) == "number" then
-    self:concat("\n"..self:indent(indentSize), ...)
-  else
-    self:concat("\n"..self:indent(), indentSize, ...)
-  end
+function xml:write(...)
+  self:concat(..., "\n")
+  return self
 end
 
 
@@ -407,8 +403,8 @@ function rbxm:body(object)
   local body = xml:new()
 
   local function writeXML(object)
-    body:write(0, string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
-    body:write(1, "<Properties>")
+    body:indent(0):write(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
+    body:indent(1):write("<Properties>")
     body:indent(1) -- [1]
 
     local props = rbxm:getProperties(object) -- [2]
@@ -417,16 +413,16 @@ function rbxm:body(object)
       local propName  = props[i]
       local propType  = object[propName][1]
       local propValue = tostring(object[propName][2])
-      body:write(0, string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
+      body:write(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
-    body:write(-1, "</Properties>")
+    body:indent(-1):write("</Properties>")
 
     for i = 1, #object do -- [3]
       writeXML(object[i])
     end
 
-    body:write(-1, "</Item>")
+    body:indent(-1):write("</Item>")
   end
   writeXML(object)
 
@@ -446,13 +442,13 @@ function rbxm:tabToStr(object)
 
   local body = self:body(object)
   local file = xml:new()
-  file:write(0, "<roblox "..
+  file:write("<roblox "..
     "xmlns:xmime=\"http://www.w3.org/2005/05/xmlmime\" "..
     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "..
     "xsi:noNamespaceSchemaLocation=\"http://www.roblox.com/roblox.xsd\" "..
     "version=\"4\">")
-  file:write(1, body)
-  file:write(0, "\n</roblox>")
+  file:write(body)
+  file:write("</roblox>")
 
   return table.concat(file.contents)
 end
