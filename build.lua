@@ -235,11 +235,7 @@ end
   ==============================================================================
 --]]
 
-local rbxm = {
-  -- ID used for the "referent" attribute. This value is incremented each time
-  -- an object is converted to XML.
-  objectId = 0
-}
+local rbxm = {}
 
 --[[
   Create a Value instance (Int, String, Bool, etc).
@@ -349,13 +345,18 @@ function rbxm:checkScriptSyntax(source)
 end
 
 --[[
-  The "referent" attribute is used as a unique identifier for each instance in
-  the game. This increments the current objectId property to always return a
-  unique value that can be used as the referent.
+  The "referent" attribute is applied to every <Item> tag, and is used as a
+  unique identifier for each instance in the game.
+
+  This function simply increments a value so we can be sure we always use a
+  unique number as the referent.
 --]]
 function rbxm:referent()
-  self.objectId = self.objectId + 1
-  return self.objectId
+  local ref = 0
+  return function()
+    ref = ref + 1
+    return ref
+  end
 end
 
 --[[
@@ -393,9 +394,10 @@ end
 --]]
 function rbxm:body(object)
   local body = xml:new()
+  local ref = self:referent()
 
   local function writeXML(object)
-    body:indent(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
+    body:indent(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
     body:indent(1):append("<Properties>")
     body:indent(1) -- [1]
 
