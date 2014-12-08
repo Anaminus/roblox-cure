@@ -194,6 +194,8 @@ function xml:append(...)
   for i = 1, #args do
     concat(args[i])
   end
+
+  return self
 end
 
 --[[
@@ -220,17 +222,7 @@ function xml:indent(indentSize)
   if indentSize then
     xml.indentLevel = xml.indentLevel + indentSize
   end
-  self:append(string.rep("\t", xml.indentLevel))
-  return self
-end
-
---[[
-  Append any number of values to a table containing XML strings.
-
-  @param ... Any number of values that can be turned into a string.
---]]
-function xml:write(...)
-  self:append(..., "\n")
+  self:append("\n"..string.rep("\t", xml.indentLevel))
   return self
 end
 
@@ -403,8 +395,8 @@ function rbxm:body(object)
   local body = xml:new()
 
   local function writeXML(object)
-    body:indent(0):write(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
-    body:indent(1):write("<Properties>")
+    body:indent(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, rbxm:referent()))
+    body:indent(1):append("<Properties>")
     body:indent(1) -- [1]
 
     local props = rbxm:getProperties(object) -- [2]
@@ -413,16 +405,16 @@ function rbxm:body(object)
       local propName  = props[i]
       local propType  = object[propName][1]
       local propValue = tostring(object[propName][2])
-      body:write(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
+      body:append(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
-    body:indent(-1):write("</Properties>")
+    body:indent(-1):append("</Properties>")
 
     for i = 1, #object do -- [3]
       writeXML(object[i])
     end
 
-    body:indent(-1):write("</Item>")
+    body:indent(-1):append("</Item>")
   end
   writeXML(object)
 
@@ -442,13 +434,13 @@ function rbxm:tabToStr(object)
 
   local body = self:body(object)
   local file = xml:new()
-  file:write("<roblox "..
+  file:append("<roblox "..
     "xmlns:xmime=\"http://www.w3.org/2005/05/xmlmime\" "..
     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "..
     "xsi:noNamespaceSchemaLocation=\"http://www.roblox.com/roblox.xsd\" "..
     "version=\"4\">")
-  file:write(body)
-  file:write("</roblox>")
+  file:append(body)
+  file:append("</roblox>")
 
   return table.concat(file.contents)
 end
