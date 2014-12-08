@@ -102,10 +102,6 @@ end
 --]]
 
 local xml = {
-  -- Global indentation for the RBXM file. This is modified by the indent method
-  -- to increase and decrease the indentation of XML elements.
-  indentLevel = 1,
-
   -- Characters that need to be escaped before being added to the XML string.
   escapeChars = {
     ["\""] = "quot",
@@ -133,10 +129,27 @@ local xml = {
     --   <first>John</first>
     --   <last>Smith</last>
     -- </name>
+
+  [2] This value is incremented when inside of a loop to allow child elements to
+      make use of the same code, while still indenting them more than the
+      previous elements.
+
+      Remember to always set it back to 0 after the loop, otherwise you could
+      run into some indenting issues.
+
+      Example:
+
+        local file = xml:new()
+        file.indentLevel = 1
+        file:indent(1):append("<Test></Test>) -- "\n\t\t<Test></Test>
+
+      It applied two tabs because it's adding the number passed to indent() with
+      the indentLevel.
 --]]
 function xml:new(opts)
   local opts = opts or {}
   opts.contents = opts.contents or {}  -- [1]
+  opts.indentLevel = opts.indentLevel or 0 -- [2]
 
   setmetatable(opts, self)
   self.__index = self
@@ -221,21 +234,23 @@ end
   Example:
 
     <roblox ...>
-      <Item class="Script">                   -- xml:indent( 1)
-        <Properties>                          -- xml:indent( 1)
-          <string name="Name">Script</string> -- xml:indent( 1)
-          <ProtectedString name="Source"></ProtectedString> -- no indentation needed
-        </Properties>                         -- xml:indent(-1)
-      </Item>                                 -- xml:indent(-1)
+      <Item class="Script">                   -- xml:indent(1)
+        <Properties>                          -- xml:indent(2)
+          <string name="Name">Script</string> -- xml:indent(3)
+          ...
+        </Properties>                         -- xml:indent(1)
+      </Item>
     </roblox>
 
   @param number indentSize Number of times you want to indent the next lines.
 --]]
 function xml:ind(indentSize)
-  if indentSize then
-    xml.indentLevel = xml.indentLevel + indentSize
+  local scope = self.indentLevel
+  if scope then
+    self:append(string.rep("\t", scope+indentSize))
+  else
+    self:append(string.rep("\t", indentSize))
   end
-  self:append(string.rep("\t", xml.indentLevel))
   return self
 end
 
@@ -408,11 +423,11 @@ end
 function rbxm:body(object)
   local body = xml:new()
   local ref = self:referent()
+  local indentLevel = body.indentLevel
 
   local function writeXML(object)
     body:ln():ind(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
     body:ln():ind(1):append("<Properties>")
-    body:ln():ind(1) -- [1]
 
     local props = rbxm:getProperties(object) -- [2]
 
@@ -420,17 +435,21 @@ function rbxm:body(object)
       local propName  = props[i]
       local propType  = object[propName][1]
       local propValue = tostring(object[propName][2])
-      body:append(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
+      body:ln():ind(2):append(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
     end
 
-    body:ln():ind(-1):append("</Properties>")
+    body:ln():ind(1):append("</Properties>")
 
     for i = 1, #object do -- [3]
+      body.indentLevel = body.indentLevel + 1
       writeXML(object[i])
+      body.indentLevel = body.indentLevel - 1
     end
 
-    body:ln():ind(-1):append("</Item>")
+    body:ln():ind(0):append("</Item>")
   end
+
+  body.indentLevel = body.indentLevel + 1
   writeXML(object)
 
   return table.concat(body.contents)
@@ -454,7 +473,7 @@ function rbxm:tabToStr(object)
     "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "..
     "xsi:noNamespaceSchemaLocation=\"http://www.roblox.com/roblox.xsd\" "..
     "version=\"4\">")
-  file:ln():append(body)
+  file:append(body)
   file:ln():append("</roblox>")
 
   return table.concat(file.contents)
