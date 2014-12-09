@@ -26,6 +26,17 @@ end
 --]]
 
 --[[
+  A list of files to ignore when compiling the source code.
+
+  .gitignore is used extensively to allow us to commit directories. This makes
+  it easier for new users to get started, so they aren't required to create a
+  bunch of directories.
+--]]
+local IGNORED = {
+  ".gitignore"
+}
+
+--[[
   Array of alternative paths to output the contents of the model. You must
   specify the full file path and extension.
 --]]
@@ -71,6 +82,17 @@ local MAX_STRING_LENGTH = 200000 - 1
 
 function isDir(dir)
   return lfs.attributes(dir, "mode") == "directory"
+end
+
+local function isNotIgnored(filename)
+  if filename ~= ".." and filename ~= "." then
+    for _,ignoredFile in ipairs(IGNORED) do
+      if filename ~= ignoredFile then
+        return true
+      end
+    end
+  end
+  return false
 end
 
 local function splitName(path)
@@ -702,25 +724,25 @@ local function handleFile(path, file, subfolder)
   end
 end
 
-local function recurseDir(path, obj, r)
+local function recurseDir(path, obj, recurse)
   print("DIR", path)
-
   for name in lfs.dir(path) do
-    if name ~= ".." and name ~= "." and name ~= ".gitignore" then
-      local joinedPath = path .. "/" .. name
+    if isNotIgnored(name) then
+      local joined = path.."/"..name
 
-      if isDir(joinedPath) then
-        obj[#obj+1] = recurseDir(joinedPath, {
-          ClassName = CONTAINER_CLASS,
-          Name = { "string", name }
-        }, true)
+      local dir = {
+        ClassName = CONTAINER_CLASS,
+        Name = { "string", name }
+      }
+
+      if isDir(joined) then
+        obj[#obj+1] = recurseDir(joined, dir, true)
       else
-        print("FILE", joinedPath)
-        obj[#obj+1] = handleFile(joinedPath, name, r)
+        print("FILE", joined)
+        obj[#obj+1] = handleFile(joined, name, recurse)
       end
     end
   end
-
   return obj
 end
 
