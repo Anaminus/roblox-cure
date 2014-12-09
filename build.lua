@@ -259,6 +259,117 @@ end
 
 
 --[[
+  Data Type Encoding
+  ==============================================================================
+--]]
+
+local encode = {}
+
+
+function encode.bool(data)
+  return not not data
+end
+
+function encode.double(data)
+  string.format("%f", data)
+end
+
+function encode.int(data)
+  return string.format("%i", data)
+end
+
+function encode.string(data)
+  return xml:encodeTruncEsc(xml:escape(data))
+end
+
+function encode.ProtectedString(data)
+  return xml:encodeTruncEsc(xml:escape(data))
+end
+
+function encode.CoordinateFrame(data)
+  local d = { data:components() }
+  local cframe = xml:new()
+    :ln():ind(1):append(("<X>"..d[1].."</X>"))
+    :ln():ind(1):append(("<Y>"..d[2].."</Y>"))
+    :ln():ind(1):append(("<Z>"..d[3].."</Z>"))
+    :ln():ind(1):append(("<R00>"..d[4].."</R00>"))
+    :ln():ind(1):append(("<R01>"..d[5].."</R01>"))
+    :ln():ind(1):append(("<R02>"..d[6].."</R02>"))
+    :ln():ind(1):append(("<R10>"..d[7].."</R10>"))
+    :ln():ind(1):append(("<R11>"..d[8].."</R11>"))
+    :ln():ind(1):append(("<R12>"..d[9].."</R12>"))
+    :ln():ind(1):append(("<R20>"..d[10].."</R20>"))
+    :ln():ind(1):append(("<R21>"..d[11].."</R21>"))
+    :ln():ind(1):append(("<R22>"..d[12].."</R22>"))
+  return cframe
+end
+
+function encode.Color3(data)
+  return tonumber(string.format("0xFF%02X%02X%02X", data.r*255, data.g*255, data.b*255))
+end
+
+function encode.Content(data)
+  if #data == 0 then
+    return "<null></null>"
+  else
+    return { "<url>"..data.."</url>" }
+  end
+end
+
+function encode.Ray(data)
+  local o = data.Origin
+  local d = data.Direction
+  local ray = xml:new()
+    :ln():ind(1):append("<origin>")
+    :ln():ind(2):append("<X>", o.x, "</X>")
+    :ln():ind(2):append("<Y>", o.y, "</Y>")
+    :ln():ind(2):append("<Z>", o.z, "</Z>")
+    :ln():ind(1):append("</origin>")
+    :ln():ind(1):append("<direction>")
+    :ln():ind(2):append("<X>", d.x, "</x>")
+    :ln():ind(2):append("<Y>", d.y, "</Y>")
+    :ln():ind(2):append("<Z>", d.z, "</Z>")
+    :ln():ind(1):append("</direction>")
+  return ray
+end
+
+function encode.Vector3(data)
+  local vector3 = xml:new()
+    :ln():ind(1):append("<X>"..data.x.."</X>")
+    :ln():ind(1):append("<Y>"..data.y.."</Y>")
+    :ln():ind(1):append("<Z>"..data.z.."</Z>")
+  return vector3
+end
+
+function encode.Vector2(data)
+  local vector2 = xml:new()
+    :ln():ind(1):append("<X>"..data.x.."</X>")
+    :ln():ind(1):append("<Y>"..data.y.."</Y>")
+  return vector2
+end
+
+function encode.UDim2()
+  local udim2 = xml:new()
+    :ln():ind(1):append("<XS>"..data.X.Scale.."</XS>")
+    :ln():ind(1):append("<XO>"..data.X.Offset.."</XO>")
+    :ln():ind(1):append("<YS>"..data.Y.Scale.."</YS>")
+    :ln():ind(1):append("<YO>"..data.Y.Offset.."</YO>")
+  return udim2
+end
+
+function encode.Ref(data)
+  if data == nil then
+    return "null"
+  else
+    return data
+  end
+end
+
+
+
+
+
+--[[
   Roblox Models
   ==============================================================================
 --]]
@@ -388,6 +499,21 @@ function rbxm:referent()
 end
 
 --[[
+  Uses methods in the 'encode' object to convert Roblox properties into XML-safe
+  strings.
+
+  @param className The ClassName of the property. CFrame, Ray and UDim2 would
+                   all be applicable.
+  @param value     The value to be encoded.
+--]]
+function rbxm:encodeProperty(className, value)
+  if encode[className] then
+    value = encode[className](value)
+  end
+  return value
+end
+
+--[[
   Extract the properties from an instance.
 
   @param table object A table contaiing key/value pairs that replicate the
@@ -414,11 +540,6 @@ end
 
   @param table object Tabularized directory structure that will be converted
                       into XML.
-
-  [1] Indent the property list.
-  [1] This needs to stay inside of the writeXML function, otherwise the
-      properties won't change when recursing through new objects.
-  [3] Recurse and add children.
 --]]
 function rbxm:body(object)
   local body = xml:new()
@@ -429,18 +550,20 @@ function rbxm:body(object)
     body:ln():ind(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
     body:ln():ind(1):append("<Properties>")
 
-    local props = rbxm:getProperties(object) -- [2]
+    local props = rbxm:getProperties(object)
 
     for i = 1, #props do
-      local propName  = props[i]
-      local propType  = object[propName][1]
-      local propValue = tostring(object[propName][2])
-      body:ln():ind(2):append(string.format("<%s name=\"%s\">%s</%s>", propType, propName, propValue, propType))
+      local name      = props[i]
+      local className = object[name][1]
+      local value     = object[name][2]
+
+      value = self:encodeProperty(className, value)
+      body:ln():ind(2):append(string.format("<%s name=\"%s\">%s</%s>", className, name, value, className))
     end
 
     body:ln():ind(1):append("</Properties>")
 
-    for i = 1, #object do -- [3]
+    for i = 1, #object do
       body.indentLevel = body.indentLevel + 1
       writeXML(object[i])
       body.indentLevel = body.indentLevel - 1
