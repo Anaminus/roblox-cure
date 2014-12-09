@@ -546,10 +546,7 @@ function rbxm:body(object)
   local ref = self:referent()
   local indentLevel = body.indentLevel
 
-  local function writeXML(object)
-    body:ln():ind(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
-    body:ln():ind(1):append("<Properties>")
-
+  local function exportProperties(object)
     local props = rbxm:getProperties(object)
 
     for i = 1, #props do
@@ -560,15 +557,18 @@ function rbxm:body(object)
       value = self:encodeProperty(className, value)
       body:ln():ind(2):append(string.format("<%s name=\"%s\">%s</%s>", className, name, value, className))
     end
+  end
 
+  local function writeXML(object)
+    body:ln():ind(0):append(string.format("<Item class=\"%s\" referent=\"RBX%s\">", object.ClassName, ref()))
+    body:ln():ind(1):append("<Properties>")
+    exportProperties(object)
     body:ln():ind(1):append("</Properties>")
-
     for i = 1, #object do
       body.indentLevel = body.indentLevel + 1
       writeXML(object[i])
       body.indentLevel = body.indentLevel - 1
     end
-
     body:ln():ind(0):append("</Item>")
   end
 
