@@ -148,10 +148,10 @@ local xml = {
   to a file.
 
     local test = xml:new()
-    test:write("<name>")
-    test:indent(1):write("<first>John</first>")
-    test:indent(1):write("<last>Smith</last>")
-    test:write("</name>")
+      :ln():append("<name>")
+      :ln():indent(1):append("<first>John</first>")
+      :ln():indent(1):append("<last>Smith</last>")
+      :ln():append("</name>")
 
     -- <name>
     --   <first>John</first>
@@ -169,7 +169,7 @@ local xml = {
 
         local file = xml:new()
         file.indentLevel = 1
-        file:indent(1):append("<Test></Test>) -- "\n\t\t<Test></Test>
+        file:ln():indent(1):append("<Test></Test>) -- "\n\t\t<Test></Test>
 
       It applied two tabs because it's adding the number passed to indent() with
       the indentLevel.
