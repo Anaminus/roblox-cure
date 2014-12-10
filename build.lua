@@ -459,14 +459,12 @@ end
   @param number value ID of a Roblox asset. The number at the end of the URL on
                       an item. Eg. 42891177, 40469899, 39053953
 --]]
-function rbxm:createAsset(name, value)
-  content = tonumber(content)
-
-  if not content then
-    print("WARNING: content of `" .. file .. "` must be a number")
+function rbxm:createAsset(file, name, value)
+  value = tonumber(value)
+  if not value then
+    print("WARNING: content of '"..file.."' must be a number")
   end
-
-  return createValue("Int", name, content)
+  return self:createValue("Int", name, value)
 end
 
 --[[
@@ -721,9 +719,9 @@ local function handleFile(path, file, subfolder)
         return rbxm:splitFileParts(content)
       end
     end
-  elseif ext == "asset" then
+  elseif extension == "asset" then
     -- Create an IntValue containing a Roblox AssetID
-    return rbxm:createAsset(name, content)
+    return rbxm:createAsset(file, name, content)
   else
     -- Disable and comment out anything else
     return rbxm:createServerScript(name, "--[==[\n"..content.."\n--]==]", true)
