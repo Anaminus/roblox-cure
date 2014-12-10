@@ -63,6 +63,12 @@ local RBXM_FILE_EXT  = ".rbxmx" -- [1]
 local RBXM_FILE = RBXM_FILE_NAME..RBXM_FILE_EXT
 
 --[[
+  Sets the name for the top-most instance in the model file. This contains all
+  of the descendants of the source directory, once they're compiled.
+--]]
+local RBXM_ROOT_NAME  = "cure"
+
+--[[
   The instance that will be used to replicate the folder structure. Any
   instance can be used, but Folders are recommended.
 --]]
@@ -757,7 +763,7 @@ end
 function compile(args)
   local rbxmObj = recurseDir(SOURCE_DIR, {
     ClassName = CONTAINER_CLASS,
-    Name = { "string", "cure" }
+    Name = { "string", RBXM_ROOT_NAME }
   })
 
   local rbxmPath = BUILD_DIR.."/"..(args[1] or RBXM_FILE)
