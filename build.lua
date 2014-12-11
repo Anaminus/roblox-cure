@@ -174,14 +174,14 @@ local xml = {
       It applied two tabs because it's adding the number passed to indent() with
       the indentLevel.
 --]]
-function xml:new(opts)
-  local opts = opts or {}
-  opts.contents = opts.contents or {}  -- [1]
-  opts.indentLevel = opts.indentLevel or 0 -- [2]
-
-  setmetatable(opts, self)
+function xml:new()
+  local obj = {
+    contents = {},
+    indentLevel = 0 -- [2]
+  }
+  setmetatable(obj, self)
   self.__index = self
-  return opts
+  return obj
 end
 
 --[[
