@@ -579,7 +579,6 @@ end
 function rbxm:body(object)
   local body = xml:new()
   local ref = self:referent()
-  local indentLevel = body.indentLevel
 
   local function exportProperties(object)
     local props = rbxm:getProperties(object)
