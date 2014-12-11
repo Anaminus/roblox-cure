@@ -279,6 +279,13 @@ function xml:ind(indentSize)
   return self
 end
 
+--[[
+` Merges all of the loose XML strings together for exporting to a file.
+--]]
+function xml:save()
+  return table.concat(self.contents)
+end
+
 
 
 
@@ -313,7 +320,8 @@ end
 
 function encode.CoordinateFrame(data)
   local d = { data:components() }
-  local cframe = xml:new()
+
+  return xml:neW()
     :ln():ind(1):append(("<X>"..d[1].."</X>"))
     :ln():ind(1):append(("<Y>"..d[2].."</Y>"))
     :ln():ind(1):append(("<Z>"..d[3].."</Z>"))
@@ -326,7 +334,7 @@ function encode.CoordinateFrame(data)
     :ln():ind(1):append(("<R20>"..d[10].."</R20>"))
     :ln():ind(1):append(("<R21>"..d[11].."</R21>"))
     :ln():ind(1):append(("<R22>"..d[12].."</R22>"))
-  return cframe
+    :save()
 end
 
 function encode.Color3(data)
@@ -344,7 +352,7 @@ end
 function encode.Ray(data)
   local o = data.Origin
   local d = data.Direction
-  local ray = xml:new()
+  return xml:new()
     :ln():ind(1):append("<origin>")
     :ln():ind(2):append("<X>", o.x, "</X>")
     :ln():ind(2):append("<Y>", o.y, "</Y>")
@@ -355,31 +363,31 @@ function encode.Ray(data)
     :ln():ind(2):append("<Y>", d.y, "</Y>")
     :ln():ind(2):append("<Z>", d.z, "</Z>")
     :ln():ind(1):append("</direction>")
-  return ray
+    :save()
 end
 
 function encode.Vector3(data)
-  local vector3 = xml:new()
+  return xml:new()
     :ln():ind(1):append("<X>"..data.x.."</X>")
     :ln():ind(1):append("<Y>"..data.y.."</Y>")
     :ln():ind(1):append("<Z>"..data.z.."</Z>")
-  return vector3
+    :save()
 end
 
 function encode.Vector2(data)
-  local vector2 = xml:new()
+  return xml:new()
     :ln():ind(1):append("<X>"..data.x.."</X>")
     :ln():ind(1):append("<Y>"..data.y.."</Y>")
-  return vector2
+    :save()
 end
 
 function encode.UDim2()
-  local udim2 = xml:new()
+  return xml:new()
     :ln():ind(1):append("<XS>"..data.X.Scale.."</XS>")
     :ln():ind(1):append("<XO>"..data.X.Offset.."</XO>")
     :ln():ind(1):append("<YS>"..data.Y.Scale.."</YS>")
     :ln():ind(1):append("<YO>"..data.Y.Offset.."</YO>")
-  return udim2
+    :save()
 end
 
 function encode.Ref(data)
@@ -602,7 +610,7 @@ function rbxm:body(object)
   body.indentLevel = body.indentLevel + 1
   writeXML(object)
 
-  return table.concat(body.contents)
+  return body:save()
 end
 
 --[[
@@ -626,7 +634,7 @@ function rbxm:tabToStr(object)
   file:append(body)
   file:ln():append("</roblox>")
 
-  return table.concat(file.contents)
+  return file:save()
 end
 
 -- Saves an RBXM string or table.
