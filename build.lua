@@ -295,6 +295,11 @@ end
   ==============================================================================
 --]]
 
+--[[
+  These methods encode Lua and Roblox data types into XML-safe strings. They are
+  run dynamically by rbxm:encodeProperty.
+--]]
+
 local encode = {}
 
 
