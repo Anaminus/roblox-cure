@@ -648,25 +648,6 @@ end
 
 
 --[[
-  Cure
-  ==============================================================================
---]]
-
-local cure = {}
-
-function cure:server(content)
-  return rbxm:createServerScript("cure.server", content)
-end
-
-function cure:client(content)
-  return rbxm:createLocalScript("cure.client", content)
-end
-
-
-
-
-
---[[
   Compiling
   ==============================================================================
 --]]
@@ -694,9 +675,9 @@ local function handleFile(path, file, subfolder)
     rbxm:checkScriptSyntax(content)
 
     if file:lower() == "cure.server.lua" then
-      return cure:server(content)
+      return rbxm:createServerScript("cure.server", content)
     elseif file:lower() == "cure.client.lua" then
-      return cure:client(content)
+      return rbxm:createLocalScript("cure.client", content)
     end
   end
 
