@@ -26,7 +26,7 @@ end
 --]]
 
 --[[
-  A list of files to ignore when compiling the source code.
+  An array of files to ignore when compiling the source code.
 
   .gitignore is used extensively to allow us to commit directories. This makes
   it easier for new users to get started, so they aren't required to create a
@@ -46,7 +46,7 @@ local LOCATIONS = {
 }
 
 --[[
-  Where source code is stored and compiled to
+  Where source code is stored and compiled to, respectively.
 --]]
 local SOURCE_DIR = "source"
 local BUILD_DIR  = "build"
@@ -169,7 +169,7 @@ local xml = {
 
         local file = xml:new()
         file.indentLevel = 1
-        file:ln():indent(1):append("<Test></Test>) -- "\n\t\t<Test></Test>
+        file:ln():indent(1):append("<Test></Test>") -- "\n\t\t<Test></Test>"
 
       It applied two tabs because it's adding the number passed to indent() with
       the indentLevel.
@@ -217,9 +217,9 @@ function xml:escape(str)
 end
 
 --[[
-  Append the arguments onto the self.contents table. Later on, all the strings
-  in self.contents are concatenated into a single string, which gets turned into
-  an XML file.
+  Append the arguments onto the self.contents table. Later on, all the appended
+  strings are concatenated into a single string, which gets turned into an XML
+  file.
 --]]
 function xml:append(...)
   local args = {...}
@@ -240,7 +240,7 @@ function xml:append(...)
 end
 
 --[[
-  Used at the start of an XML chain to start everything off on a newline.
+  Used at the beginning of an XML chain to start everything off on a newline.
 
   Example:
 
@@ -255,9 +255,6 @@ end
 --[[
   Indents a line to make reading the XML easier. Who wants to read unindented
   markup?
-
-  An indent size of 0 will not indent the line. Note that indentation is
-  relative to the previous line's indentation.
 
   Example:
 
@@ -407,7 +404,8 @@ local rbxm = {}
 --[[
   Create a Value instance (Int, String, Bool, etc).
 
-  @param string className  Any Roblox instance that ends in "Value"
+  @param string className  Any Roblox "Value" instance. StringValue, BoolValue,
+                           etc.
   @param string name       Name of the Value
   @param any    value      Depends on which instance you use. If you're using a
                            StringValue then this must be a string.
@@ -422,6 +420,9 @@ end
 
 --[[
   Generate a new Script instance. Wrappers for this method are found below it.
+
+  The wrappers only serve to pass in the className argument for you. When using
+  one, you only need to specify name, source and disabled
 
   @param string className  Type of script. Eg. "Script" or "LocalScript"
   @param string name       Name of the script
@@ -738,6 +739,10 @@ end
   @param String args
     Arguments from the command-line. Only supports one argument, which alters
     the path that the model file is built to.
+
+  [1] Make sure the output directory exists
+  [2] Generate the model
+  [3] Save the model to other locations
 --]]
 function compile(args)
   local rbxmObj = recurseDir(SOURCE_DIR, {
@@ -747,14 +752,10 @@ function compile(args)
 
   local rbxmPath = BUILD_DIR.."/"..(args[1] or RBXM_FILE)
 
-  -- Make sure the output directory exists
-  lfs.mkdir(BUILD_DIR)
+  lfs.mkdir(BUILD_DIR) -- [1]
+  rbxm:save(rbxmObj, rbxmPath) -- [2]
 
-  -- Generate the model
-  rbxm:save(rbxmObj, rbxmPath)
-
-  -- Save the model to other locations
-  for i,v in ipairs(LOCATIONS) do
+  for i,v in ipairs(LOCATIONS) do -- [3]
     rbxm:save(rbxmObj, LOCATIONS[i])
   end
 end
