@@ -747,10 +747,6 @@ end
   @param String args
     Arguments from the command-line. Only supports one argument, which alters
     the path that the model file is built to.
-
-  [1] Make sure the output directory exists
-  [2] Generate the model
-  [3] Save the model to other locations
 --]]
 function compile(args)
   local rbxmObj = recurseDir(SOURCE_DIR, {
@@ -760,10 +756,10 @@ function compile(args)
 
   local rbxmPath = BUILD_DIR.."/"..(args[1] or RBXM_FILE)
 
-  lfs.mkdir(BUILD_DIR) -- [1]
-  rbxm:save(rbxmObj, rbxmPath) -- [2]
+  lfs.mkdir(BUILD_DIR)
+  rbxm:save(rbxmObj, rbxmPath)
 
-  for i,v in ipairs(LOCATIONS) do -- [3]
+  for i,v in ipairs(LOCATIONS) do
     rbxm:save(rbxmObj, LOCATIONS[i])
   end
 end
